@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+node scripts/strip-cursor-commit-footer.mjs "$1"
