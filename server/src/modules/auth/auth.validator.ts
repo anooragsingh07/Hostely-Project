@@ -1,7 +1,7 @@
 import { ROLL_NO_REGEX, VALIDATION, isCollegeEmail } from "@hostely/shared";
 import { z } from "zod";
 
-import { env } from "@/config/env";
+import { env } from "../../config/env.js";
 
 /** Shared field rules keep client/server validation in lock-step. */
 const emailField = z.string().trim().toLowerCase().email("Invalid email");

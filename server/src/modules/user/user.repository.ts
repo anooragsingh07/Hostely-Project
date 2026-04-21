@@ -28,7 +28,7 @@ const toPublic = (doc: UserDoc): PublicUser => ({
 
 export class UserRepository implements IUserRepository {
   async create(input: CreateUserInput): Promise<PublicUser> {
-    const doc = await UserModel.create(input);
+    const doc = (await UserModel.create(input)) as unknown as UserDoc;
     return toPublic(doc);
   }
 
@@ -45,7 +45,7 @@ export class UserRepository implements IUserRepository {
   }
 
   async findById(id: string): Promise<PublicUser | null> {
-    const doc = await UserModel.findById(id).exec();
+    const doc = (await UserModel.findById(id).exec()) as unknown as UserDoc | null;
     return doc ? toPublic(doc) : null;
   }
 

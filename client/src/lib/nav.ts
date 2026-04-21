@@ -1,4 +1,4 @@
-import { Home, MessageSquare, ShoppingBag, Tag, UserRound } from "lucide-react";
+import { Home, MessagesSquare, ShoppingBag, Store, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -7,11 +7,11 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
-/** Primary product surfaces. Order matters — it's the user's mental model. */
+/** Primary product surfaces. Order reflects the user's mental model. */
 export const NAV_ITEMS: readonly NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
-  { label: "Listings", href: "/dashboard/listings", icon: Tag },
-  { label: "Chat", href: "/dashboard/chat", icon: MessageSquare },
-  { label: "Orders", href: "/dashboard/orders", icon: ShoppingBag },
+  { label: "Buy", href: "/dashboard/buy", icon: ShoppingBag },
+  { label: "Sell", href: "/dashboard/sell", icon: Store },
+  { label: "Requirements", href: "/dashboard/requirements", icon: MessagesSquare },
   { label: "Profile", href: "/dashboard/profile", icon: UserRound },
 ] as const;

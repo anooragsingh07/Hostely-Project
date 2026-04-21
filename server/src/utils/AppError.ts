@@ -9,7 +9,12 @@ export class AppError extends Error {
   public readonly code: string;
   public readonly details?: unknown;
 
-  constructor(message: string, statusCode = HTTP_STATUS.INTERNAL_ERROR, code = "INTERNAL_ERROR", details?: unknown) {
+  constructor(
+    message: string,
+    statusCode: number = HTTP_STATUS.INTERNAL_ERROR,
+    code: string = "INTERNAL_ERROR",
+    details?: unknown,
+  ) {
     super(message);
     this.name = "AppError";
     this.statusCode = statusCode;
