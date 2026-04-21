@@ -7,6 +7,14 @@ import { NextResponse, type NextRequest } from "next/server";
  * from reaching dashboard pages (and from bouncing back to auth pages
  * after they're already signed in).
  */
+/**
+ * Dev-only escape hatch: when NEXT_PUBLIC_PREVIEW_MODE=1, skip the
+ * auth redirect so the design/UX of authenticated pages can be reviewed
+ * without a real backend session. Never enable this in production.
+ */
+const PREVIEW_MODE =
+  process.env.NEXT_PUBLIC_PREVIEW_MODE === "1" && process.env.NODE_ENV !== "production";
+
 export function middleware(req: NextRequest) {
   const hasSession = Boolean(req.cookies.get(SESSION_COOKIE_NAME)?.value);
   const { pathname } = req.nextUrl;
@@ -14,7 +22,7 @@ export function middleware(req: NextRequest) {
   const isDashboard = pathname.startsWith("/dashboard");
   const isAuthRoute = pathname === "/sign-in" || pathname === "/sign-up";
 
-  if (isDashboard && !hasSession) {
+  if (isDashboard && !hasSession && !PREVIEW_MODE) {
     const url = req.nextUrl.clone();
     url.pathname = "/sign-in";
     url.searchParams.set("from", pathname);

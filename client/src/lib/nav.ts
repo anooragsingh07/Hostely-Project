@@ -1,4 +1,4 @@
-import { Home, MessagesSquare, ShoppingBag, Store, UserRound } from "lucide-react";
+import { Home, MessageSquare, MessagesSquare, ShoppingBag, Store, UserRound } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -13,5 +13,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { label: "Buy", href: "/dashboard/buy", icon: ShoppingBag },
   { label: "Sell", href: "/dashboard/sell", icon: Store },
   { label: "Requirements", href: "/dashboard/requirements", icon: MessagesSquare },
+  { label: "Chat", href: "/dashboard/chat", icon: MessageSquare },
   { label: "Profile", href: "/dashboard/profile", icon: UserRound },
 ] as const;

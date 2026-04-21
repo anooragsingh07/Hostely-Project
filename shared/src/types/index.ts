@@ -5,3 +5,5 @@ export * from "./item";
 export * from "./requirement";
 export * from "./interest";
 export * from "./comment";
+export * from "./notification";
+export * from "./chat";
