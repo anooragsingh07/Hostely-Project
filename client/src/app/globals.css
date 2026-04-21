@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Hostely design tokens — Cal.com-inspired neutral palette.
+ * Light/dark swap by flipping CSS variables only.
+ */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -9,6 +13,9 @@
 
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
 
     --primary: 240 6% 10%;
     --primary-foreground: 0 0% 98%;
@@ -25,6 +32,12 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
+    --success: 142 71% 36%;
+    --success-foreground: 0 0% 98%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 98%;
+
     --border: 240 6% 90%;
     --input: 240 6% 90%;
     --ring: 240 5% 65%;
@@ -38,6 +51,9 @@
 
     --card: 240 10% 6%;
     --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 6%;
+    --popover-foreground: 0 0% 98%;
 
     --primary: 0 0% 98%;
     --primary-foreground: 240 6% 10%;
@@ -53,6 +69,12 @@
 
     --destructive: 0 63% 40%;
     --destructive-foreground: 0 0% 98%;
+
+    --success: 142 60% 42%;
+    --success-foreground: 0 0% 98%;
+
+    --warning: 38 85% 55%;
+    --warning-foreground: 240 6% 10%;
 
     --border: 240 4% 16%;
     --input: 240 4% 16%;
@@ -74,6 +96,12 @@
     font-feature-settings: "cv11", "ss01";
     font-variation-settings: "opsz" 32;
   }
+
+  /* Global focus ring — keeps accessibility consistent across inputs. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
   ::selection {
     @apply bg-foreground/10;
   }

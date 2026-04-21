@@ -2,6 +2,7 @@
 
 import { Search } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { UserMenu } from "./user-menu";
 
 interface TopbarProps {
   title?: string;
@@ -11,7 +12,7 @@ interface TopbarProps {
 
 /**
  * Page header. Hosts the page title, a command-palette-style search trigger,
- * and the theme toggle. Primary nav lives in the sidebar.
+ * and the account menu. Primary navigation lives in the sidebar.
  */
 export const Topbar = ({ title, description, actions }: TopbarProps) => (
   <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur">
@@ -40,6 +41,7 @@ export const Topbar = ({ title, description, actions }: TopbarProps) => (
 
       {actions}
       <ThemeToggle />
+      <UserMenu name="Student" email="you@campus.edu" />
     </div>
   </header>
 );
