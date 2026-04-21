@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { parseEmailDomains } from "@hostely/shared";
 import { z } from "zod";
 
 /**
@@ -19,6 +20,10 @@ const EnvSchema = z.object({
 
   SESSION_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7),
 
+  COLLEGE_EMAIL_DOMAINS: z
+    .string()
+    .min(1, "COLLEGE_EMAIL_DOMAINS is required (comma-separated list)"),
+
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
@@ -33,5 +38,8 @@ if (!parsed.success) {
 }
 
 /** Flattened, typed, frozen runtime config. */
-export const env = Object.freeze(parsed.data);
+export const env = Object.freeze({
+  ...parsed.data,
+  COLLEGE_EMAIL_DOMAINS_LIST: parseEmailDomains(parsed.data.COLLEGE_EMAIL_DOMAINS),
+});
 export type Env = typeof env;

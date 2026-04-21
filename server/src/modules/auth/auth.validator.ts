@@ -1,8 +1,14 @@
-import { ROLL_NO_REGEX, VALIDATION } from "@hostely/shared";
+import { ROLL_NO_REGEX, VALIDATION, isCollegeEmail } from "@hostely/shared";
 import { z } from "zod";
+
+import { env } from "@/config/env";
 
 /** Shared field rules keep client/server validation in lock-step. */
 const emailField = z.string().trim().toLowerCase().email("Invalid email");
+const collegeEmailField = emailField.refine(
+  (value) => isCollegeEmail(value, env.COLLEGE_EMAIL_DOMAINS_LIST),
+  { message: "Email must belong to an approved college domain" },
+);
 const rollNoField = z
   .string()
   .trim()
@@ -19,7 +25,7 @@ const passwordField = z
 
 export const registerSchema = z.object({
   name: z.string().trim().min(VALIDATION.NAME_MIN).max(VALIDATION.NAME_MAX),
-  email: emailField,
+  email: collegeEmailField,
   rollNo: rollNoField,
   department: z.string().trim().min(VALIDATION.DEPARTMENT_MIN).max(VALIDATION.DEPARTMENT_MAX),
   hostelName: z.string().trim().min(VALIDATION.HOSTEL_MIN).max(VALIDATION.HOSTEL_MAX),
@@ -33,7 +39,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
  */
 export const loginSchema = z
   .object({
-    email: emailField.optional(),
+    email: collegeEmailField.optional(),
     rollNo: rollNoField.optional(),
     department: z.string().trim().min(VALIDATION.DEPARTMENT_MIN).max(VALIDATION.DEPARTMENT_MAX),
     hostelName: z.string().trim().min(VALIDATION.HOSTEL_MIN).max(VALIDATION.HOSTEL_MAX),

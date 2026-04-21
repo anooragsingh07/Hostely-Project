@@ -1,7 +1,22 @@
-import { ROLL_NO_REGEX, VALIDATION } from "@hostely/shared";
+import { ROLL_NO_REGEX, VALIDATION, isCollegeEmail } from "@hostely/shared";
 import { z } from "zod";
 
-const emailField = z.string().trim().toLowerCase().email("Enter a valid email");
+import { clientEnv } from "@/lib/env";
+
+const baseEmail = z.string().trim().toLowerCase().email("Enter a valid email");
+
+/**
+ * When the public env advertises an allow-list, enforce it at the client
+ * for instant feedback. Otherwise stay permissive and defer to the server.
+ */
+const emailField =
+  clientEnv.collegeEmailDomains.length > 0
+    ? baseEmail.refine(
+        (value) => isCollegeEmail(value, clientEnv.collegeEmailDomains),
+        { message: "Use your college email" },
+      )
+    : baseEmail;
+
 const rollNoField = z
   .string()
   .trim()
