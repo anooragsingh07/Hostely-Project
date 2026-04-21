@@ -1,34 +1,18 @@
+import type { AuthResponse, PublicUser, SignInCredentials, SignUpCredentials } from "@hostely/shared";
 import { apiClient } from "@/lib/api-client";
-import type { SignInValues, SignUpValues } from "../schemas/auth.schema";
-
-export interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  rollNo: string;
-  department: string;
-  hostelName: string;
-  role: "student" | "admin";
-  avatarUrl?: string;
-}
-
-export interface AuthResponse {
-  token: string;
-  user: AuthUser;
-}
 
 /** Thin API surface — caller is a hook, not a component. */
 export const authApi = {
-  register: async (values: SignUpValues): Promise<AuthResponse> => {
+  register: async (values: SignUpCredentials): Promise<AuthResponse> => {
     const { data } = await apiClient.post<{ data: AuthResponse }>("/auth/register", values);
     return data.data;
   },
-  login: async (values: SignInValues): Promise<AuthResponse> => {
+  login: async (values: SignInCredentials): Promise<AuthResponse> => {
     const { data } = await apiClient.post<{ data: AuthResponse }>("/auth/login", values);
     return data.data;
   },
-  me: async (): Promise<AuthUser> => {
-    const { data } = await apiClient.get<{ data: { user: AuthUser } }>("/auth/me");
+  me: async (): Promise<PublicUser> => {
+    const { data } = await apiClient.get<{ data: { user: PublicUser } }>("/auth/me");
     return data.data.user;
   },
 };

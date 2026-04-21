@@ -1,3 +1,4 @@
+import { ROLL_NO_REGEX, VALIDATION } from "@hostely/shared";
 import { z } from "zod";
 
 /** Shared field rules keep client/server validation in lock-step. */
@@ -6,22 +7,22 @@ const rollNoField = z
   .string()
   .trim()
   .toUpperCase()
-  .min(3, "Roll number too short")
-  .max(20, "Roll number too long")
-  .regex(/^[A-Z0-9-]+$/, "Use letters, numbers, and dashes only");
+  .min(VALIDATION.ROLL_MIN, "Roll number too short")
+  .max(VALIDATION.ROLL_MAX, "Roll number too long")
+  .regex(ROLL_NO_REGEX, "Use letters, numbers, and dashes only");
 const passwordField = z
   .string()
-  .min(8, "At least 8 characters")
-  .max(128)
+  .min(VALIDATION.PASSWORD_MIN, `At least ${VALIDATION.PASSWORD_MIN} characters`)
+  .max(VALIDATION.PASSWORD_MAX)
   .regex(/[A-Za-z]/, "Must contain a letter")
   .regex(/[0-9]/, "Must contain a number");
 
 export const registerSchema = z.object({
-  name: z.string().trim().min(2).max(80),
+  name: z.string().trim().min(VALIDATION.NAME_MIN).max(VALIDATION.NAME_MAX),
   email: emailField,
   rollNo: rollNoField,
-  department: z.string().trim().min(2).max(80),
-  hostelName: z.string().trim().min(2).max(80),
+  department: z.string().trim().min(VALIDATION.DEPARTMENT_MIN).max(VALIDATION.DEPARTMENT_MAX),
+  hostelName: z.string().trim().min(VALIDATION.HOSTEL_MIN).max(VALIDATION.HOSTEL_MAX),
   password: passwordField,
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -34,8 +35,8 @@ export const loginSchema = z
   .object({
     email: emailField.optional(),
     rollNo: rollNoField.optional(),
-    department: z.string().trim().min(2).max(80),
-    hostelName: z.string().trim().min(2).max(80),
+    department: z.string().trim().min(VALIDATION.DEPARTMENT_MIN).max(VALIDATION.DEPARTMENT_MAX),
+    hostelName: z.string().trim().min(VALIDATION.HOSTEL_MIN).max(VALIDATION.HOSTEL_MAX),
     password: z.string().min(1, "Password is required"),
   })
   .refine((v) => Boolean(v.email) || Boolean(v.rollNo), {

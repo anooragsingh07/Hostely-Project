@@ -24,7 +24,9 @@
       "@modules/*": ["modules/*"],
       "@routes/*": ["routes/*"],
       "@sockets/*": ["sockets/*"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@hostely/shared": ["../../shared/src/index.ts"],
+      "@hostely/shared/*": ["../../shared/src/*"]
     }
   },
   "include": ["src/**/*"],

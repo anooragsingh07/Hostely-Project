@@ -1,11 +1,12 @@
+import type { Role } from "@hostely/shared";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { AppError } from "./AppError.js";
 
 export interface JwtPayload {
-  sub: string;      // user id
+  sub: string; // user id
   email: string;
-  role: "student" | "admin";
+  role: Role;
 }
 
 export const signJwt = (payload: JwtPayload): string => {

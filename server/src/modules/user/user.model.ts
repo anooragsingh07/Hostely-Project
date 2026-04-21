@@ -1,3 +1,4 @@
+import { ROLES, ROLE_VALUES } from "@hostely/shared";
 import { Schema, model, type InferSchemaType, type HydratedDocument } from "mongoose";
 
 /**
@@ -27,7 +28,7 @@ const userSchema = new Schema(
     department: { type: String, required: true, trim: true, index: true },
     hostelName: { type: String, required: true, trim: true, index: true },
     passwordHash: { type: String, required: true, select: false },
-    role: { type: String, enum: ["student", "admin"], default: "student", index: true },
+    role: { type: String, enum: ROLE_VALUES, default: ROLES.STUDENT, index: true },
     avatarUrl: { type: String },
   },
   { timestamps: true, versionKey: false },

@@ -1,3 +1,4 @@
+import { ROLL_NO_REGEX, VALIDATION } from "@hostely/shared";
 import { z } from "zod";
 
 const emailField = z.string().trim().toLowerCase().email("Enter a valid email");
@@ -5,21 +6,30 @@ const rollNoField = z
   .string()
   .trim()
   .toUpperCase()
-  .min(3, "Too short")
-  .max(20, "Too long")
-  .regex(/^[A-Z0-9-]+$/, "Letters, numbers, dashes only");
+  .min(VALIDATION.ROLL_MIN, "Too short")
+  .max(VALIDATION.ROLL_MAX, "Too long")
+  .regex(ROLL_NO_REGEX, "Letters, numbers, dashes only");
 const passwordField = z
   .string()
-  .min(8, "At least 8 characters")
+  .min(VALIDATION.PASSWORD_MIN, `At least ${VALIDATION.PASSWORD_MIN} characters`)
+  .max(VALIDATION.PASSWORD_MAX)
   .regex(/[A-Za-z]/, "Must contain a letter")
   .regex(/[0-9]/, "Must contain a number");
 
 export const signUpSchema = z.object({
-  name: z.string().trim().min(2, "Enter your name").max(80),
+  name: z.string().trim().min(VALIDATION.NAME_MIN, "Enter your name").max(VALIDATION.NAME_MAX),
   email: emailField,
   rollNo: rollNoField,
-  department: z.string().trim().min(2, "Enter your department").max(80),
-  hostelName: z.string().trim().min(2, "Enter your hostel").max(80),
+  department: z
+    .string()
+    .trim()
+    .min(VALIDATION.DEPARTMENT_MIN, "Enter your department")
+    .max(VALIDATION.DEPARTMENT_MAX),
+  hostelName: z
+    .string()
+    .trim()
+    .min(VALIDATION.HOSTEL_MIN, "Enter your hostel")
+    .max(VALIDATION.HOSTEL_MAX),
   password: passwordField,
 });
 export type SignUpValues = z.infer<typeof signUpSchema>;
@@ -31,8 +41,16 @@ export type SignUpValues = z.infer<typeof signUpSchema>;
 export const signInSchema = z.object({
   email: emailField,
   rollNo: rollNoField,
-  department: z.string().trim().min(2, "Enter your department").max(80),
-  hostelName: z.string().trim().min(2, "Enter your hostel").max(80),
+  department: z
+    .string()
+    .trim()
+    .min(VALIDATION.DEPARTMENT_MIN, "Enter your department")
+    .max(VALIDATION.DEPARTMENT_MAX),
+  hostelName: z
+    .string()
+    .trim()
+    .min(VALIDATION.HOSTEL_MIN, "Enter your hostel")
+    .max(VALIDATION.HOSTEL_MAX),
   password: z.string().min(1, "Password is required"),
 });
 export type SignInValues = z.infer<typeof signInSchema>;

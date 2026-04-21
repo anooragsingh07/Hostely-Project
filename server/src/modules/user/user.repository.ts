@@ -20,7 +20,7 @@ const toPublic = (doc: UserDoc): PublicUser => ({
   rollNo: doc.rollNo,
   department: doc.department,
   hostelName: doc.hostelName,
-  role: doc.role as "student" | "admin",
+  role: doc.role as PublicUser["role"],
   avatarUrl: doc.avatarUrl ?? undefined,
   createdAt: doc.createdAt?.toISOString?.() ?? new Date().toISOString(),
   updatedAt: doc.updatedAt?.toISOString?.() ?? new Date().toISOString(),
