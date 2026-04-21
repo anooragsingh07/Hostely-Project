@@ -57,6 +57,8 @@ itemSchema.index({ hostelName: 1, category: 1, createdAt: -1 });
 // Status-scoped hostel feed — the most common "active listings in my hostel" query.
 itemSchema.index({ status: 1, hostelName: 1, createdAt: -1 });
 itemSchema.index({ owner: 1, createdAt: -1 });
+// Admin / analytics filters: status + category + recency.
+itemSchema.index({ status: 1, category: 1, createdAt: -1 });
 
 export type ItemDoc = HydratedDocument<InferSchemaType<typeof itemSchema>> & {
   _id: Types.ObjectId;

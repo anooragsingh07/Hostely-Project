@@ -2,6 +2,7 @@ import type { Item } from "@hostely/shared";
 import { hostelDistance } from "@hostely/shared";
 import { Heart, MapPin } from "lucide-react";
 import Link from "next/link";
+import { ListingImage } from "@/components/shared/listing-image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { formatPrice, formatRelative } from "@/lib/format";
@@ -40,13 +41,7 @@ export const ItemCard = ({ item, viewerHostel }: ItemCardProps) => {
       >
         <div className="bg-muted relative aspect-[4/3] w-full">
           {item.images[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={item.images[0]}
-              alt=""
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
+            <ListingImage src={item.images[0]} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="text-muted-foreground flex h-full w-full items-center justify-center text-xs uppercase tracking-wide">
               {item.category}

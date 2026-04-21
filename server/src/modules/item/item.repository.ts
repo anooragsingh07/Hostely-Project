@@ -102,7 +102,7 @@ export class ItemRepository implements IItemRepository {
 
   async findById(id: string): Promise<Item | null> {
     if (!Types.ObjectId.isValid(id)) return null;
-    const doc = (await ItemModel.findById(id).exec()) as unknown as ItemDoc | null;
+    const doc = (await ItemModel.findById(id).lean().exec()) as unknown as ItemDoc | null;
     if (!doc) return null;
     const owner = await loadOwner(doc.owner);
     return toPublic(doc, owner);
@@ -128,6 +128,7 @@ export class ItemRepository implements IItemRepository {
           .sort(filter.q ? { score: { $meta: "textScore" }, createdAt: -1 } : { createdAt: -1 })
           .skip(skip)
           .limit(filter.pageSize)
+          .lean()
           .exec()) as unknown as ItemDoc[]);
 
     const total = await ItemModel.countDocuments(query).exec();

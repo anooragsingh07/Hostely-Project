@@ -9,6 +9,10 @@ export const Providers = ({ children }: { children: ReactNode }) => (
     {children}
     <Toaster
       position="top-center"
+      richColors
+      closeButton
+      duration={4500}
+      visibleToasts={4}
       toastOptions={{
         className: "rounded-lg border border-border bg-card text-foreground shadow-card",
       }}

@@ -47,6 +47,7 @@ export class NotificationRepository implements INotificationRepository {
     })
       .sort({ createdAt: -1 })
       .limit(limit)
+      .lean()
       .exec()) as unknown as NotificationDoc[];
     return docs.map(toPublic);
   }

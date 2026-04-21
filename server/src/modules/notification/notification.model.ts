@@ -19,6 +19,8 @@ const notificationSchema = new Schema(
 
 notificationSchema.index({ recipient: 1, createdAt: -1 });
 notificationSchema.index({ recipient: 1, read: 1 });
+// Unread-first inbox walks: recipient + read flag + sort by time.
+notificationSchema.index({ recipient: 1, read: 1, createdAt: -1 });
 
 export type NotificationDoc = HydratedDocument<InferSchemaType<typeof notificationSchema>> & {
   _id: Types.ObjectId;

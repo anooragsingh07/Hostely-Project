@@ -34,12 +34,15 @@ export class CategoryRepository implements ICategoryRepository {
     const filter = includeInactive ? {} : { active: true };
     const docs = (await CategoryModel.find(filter)
       .sort({ seeded: -1, label: 1 })
+      .lean()
       .exec()) as unknown as CategoryDoc[];
     return docs.map(toPublic);
   }
 
   async findBySlug(slug: string): Promise<Category | null> {
-    const doc = (await CategoryModel.findOne({ slug }).exec()) as unknown as CategoryDoc | null;
+    const doc = (await CategoryModel.findOne({ slug })
+      .lean()
+      .exec()) as unknown as CategoryDoc | null;
     return doc ? toPublic(doc) : null;
   }
 

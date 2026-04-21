@@ -1,15 +1,39 @@
 "use client";
 
 import { RefreshCw } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AdminGuard } from "@/features/admin/components/admin-guard";
-import { ActivityTimelineChart } from "@/features/admin/components/activity-timeline-chart";
 import { AnalyticsKpis } from "@/features/admin/components/analytics-kpis";
-import { CategoryPopularityChart } from "@/features/admin/components/category-popularity-chart";
-import { HostelBreakdownChart } from "@/features/admin/components/hostel-breakdown-chart";
 import { StatusBreakdown } from "@/features/admin/components/status-breakdown";
 import { useAnalytics } from "@/features/admin/hooks/use-analytics";
+
+const ChartSlot = () => <div className="bg-muted h-72 animate-pulse rounded-xl" />;
+
+const ActivityTimelineChart = dynamic(
+  () =>
+    import("@/features/admin/components/activity-timeline-chart").then((m) => ({
+      default: m.ActivityTimelineChart,
+    })),
+  { loading: () => <ChartSlot />, ssr: false },
+);
+
+const CategoryPopularityChart = dynamic(
+  () =>
+    import("@/features/admin/components/category-popularity-chart").then((m) => ({
+      default: m.CategoryPopularityChart,
+    })),
+  { loading: () => <ChartSlot />, ssr: false },
+);
+
+const HostelBreakdownChart = dynamic(
+  () =>
+    import("@/features/admin/components/hostel-breakdown-chart").then((m) => ({
+      default: m.HostelBreakdownChart,
+    })),
+  { loading: () => <ChartSlot />, ssr: false },
+);
 
 /**
  * Admin analytics dashboard. Cal.com-style Overview: KPI strip,

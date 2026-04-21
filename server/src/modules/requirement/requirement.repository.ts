@@ -71,7 +71,9 @@ export class RequirementRepository implements IRequirementRepository {
 
   async findById(id: string): Promise<Requirement | null> {
     if (!Types.ObjectId.isValid(id)) return null;
-    const doc = (await RequirementModel.findById(id).exec()) as unknown as RequirementDoc | null;
+    const doc = (await RequirementModel.findById(id)
+      .lean()
+      .exec()) as unknown as RequirementDoc | null;
     if (!doc) return null;
     const owner = await loadOwner(doc.owner);
     return toPublic(doc, owner);
@@ -92,6 +94,7 @@ export class RequirementRepository implements IRequirementRepository {
         .sort(filter.q ? { score: { $meta: "textScore" }, createdAt: -1 } : { createdAt: -1 })
         .skip(skip)
         .limit(filter.pageSize)
+        .lean()
         .exec() as unknown as Promise<RequirementDoc[]>,
       RequirementModel.countDocuments(query).exec(),
     ]);

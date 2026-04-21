@@ -2,19 +2,36 @@
 
 import type { Item } from "@hostely/shared";
 import { ArrowLeft, Heart, MapPin, MessageSquare, Trash2 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/app-shell";
+import { ListingImage } from "@/components/shared/listing-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { H2, H3, Muted } from "@/components/ui/typography";
 import { useMe } from "@/features/auth/hooks/use-me";
-import { CommentThread } from "@/features/comments/components/comment-thread";
 import { InterestButton } from "@/features/interests/components/interest-button";
+
+const CommentThread = dynamic(
+  () =>
+    import("@/features/comments/components/comment-thread").then((m) => ({
+      default: m.CommentThread,
+    })),
+  {
+    loading: () => (
+      <div className="space-y-3">
+        <Skeleton className="h-5 w-28" />
+        <Skeleton className="h-24 w-full rounded-lg" />
+      </div>
+    ),
+    ssr: false,
+  },
+);
 import { itemsApi } from "@/features/items/services/items.api";
 import { formatPrice, formatRelative } from "@/lib/format";
 
@@ -85,10 +102,14 @@ export default function ItemDetailPage() {
           <div className="gap-gutter grid grid-cols-1 lg:grid-cols-5">
             <div className="lg:col-span-3">
               <Card className="overflow-hidden">
-                <div className="bg-muted aspect-[4/3] w-full">
+                <div className="bg-muted relative aspect-[4/3] w-full">
                   {item.images[0] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.images[0]} alt="" className="h-full w-full object-cover" />
+                    <ListingImage
+                      src={item.images[0]}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      priority
+                    />
                   ) : (
                     <div className="text-muted-foreground flex h-full w-full items-center justify-center text-xs uppercase tracking-wide">
                       {item.category}

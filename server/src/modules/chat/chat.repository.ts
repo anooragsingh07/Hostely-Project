@@ -51,6 +51,7 @@ export class ChatRepository implements IChatRepository {
     const docs = (await MessageModel.find({ threadKey: threadKeyOf(userAId, userBId) })
       .sort({ createdAt: -1 })
       .limit(limit)
+      .lean()
       .exec()) as unknown as MessageDoc[];
     // Return oldest → newest for the UI; the find+sort gave us newest first.
     return docs.reverse().map(toPublicMessage);
