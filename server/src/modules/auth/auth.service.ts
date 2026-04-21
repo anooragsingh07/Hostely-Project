@@ -1,4 +1,4 @@
-import { AUTH_ERROR_CODES } from "@hostely/shared";
+import { AUTH_ERROR_CODES, getHostel } from "@hostely/shared";
 import { AppError } from "../../utils/AppError.js";
 import { signJwt } from "../../utils/jwt.js";
 import { comparePassword, hashPassword } from "../../utils/password.js";
@@ -28,12 +28,15 @@ export class AuthService {
       throw AppError.conflict("Email or roll number already registered");
     }
     const passwordHash = await hashPassword(input.password);
+    // Store the canonical hostel name when we recognize the input, so
+    // feed filters and "nearest" sorting work without fuzzy matching.
+    const hostelName = getHostel(input.hostelName)?.name ?? input.hostelName;
     const user = await this.users.create({
       name: input.name,
       email: input.email,
       rollNo: input.rollNo,
       department: input.department,
-      hostelName: input.hostelName,
+      hostelName,
       passwordHash,
     });
     return { token: this.issueToken(user), user };
