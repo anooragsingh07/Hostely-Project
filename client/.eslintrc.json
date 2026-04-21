@@ -1,0 +1,7 @@
+{
+  "root": false,
+  "extends": ["next/core-web-vitals", "../.eslintrc.json"],
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "error"
+  }
+}
