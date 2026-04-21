@@ -1,5 +1,7 @@
 import { Router } from "express";
+import { adminRouter } from "../modules/admin/admin.routes.js";
 import { authRouter } from "../modules/auth/auth.routes.js";
+import { categoryRouter } from "../modules/category/category.routes.js";
 import { chatRouter } from "../modules/chat/chat.routes.js";
 import { commentTopLevelRouter } from "../modules/comment/comment.routes.js";
 import { itemRouter } from "../modules/item/item.routes.js";
@@ -19,5 +21,7 @@ api.use("/requirements", requirementRouter);
 api.use("/comments", commentTopLevelRouter);
 api.use("/notifications", notificationRouter);
 api.use("/chat", chatRouter);
+api.use("/categories", categoryRouter);
+api.use("/admin", adminRouter);
 
 export { api as apiRouter };

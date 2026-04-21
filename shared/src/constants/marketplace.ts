@@ -3,6 +3,13 @@
  * client forms, and filter UI so there's a single source of truth.
  */
 
+/**
+ * Baseline categories seeded into the Category collection on first boot.
+ * The *runtime* catalog is dynamic — admins can add/retire slugs through
+ * the admin panel — so `ItemCategory` is a plain string alias. This list
+ * is still useful for seeding, default filter dropdowns when the server
+ * is unreachable, and documentation.
+ */
 export const ITEM_CATEGORIES = [
   "books",
   "electronics",
@@ -12,12 +19,20 @@ export const ITEM_CATEGORIES = [
   "stationery",
   "other",
 ] as const;
-export type ItemCategory = (typeof ITEM_CATEGORIES)[number];
+/** Intentionally wide: the DB stores whatever slugs the admin has approved. */
+export type ItemCategory = string;
+/** The seed-only union — used where a compile-time list of baseline slugs helps. */
+export type SeedItemCategory = (typeof ITEM_CATEGORIES)[number];
 
 export const ITEM_CONDITIONS = ["new", "like-new", "good", "fair"] as const;
 export type ItemCondition = (typeof ITEM_CONDITIONS)[number];
 
-export const ITEM_STATUSES = ["active", "sold", "withdrawn"] as const;
+/**
+ * `removed` is set by admin moderation — the owner-facing UI keeps
+ * showing the listing as "taken down" while feeds/search skip it.
+ * Owners can still see it in their Sell dashboard for transparency.
+ */
+export const ITEM_STATUSES = ["active", "sold", "withdrawn", "removed"] as const;
 export type ItemStatus = (typeof ITEM_STATUSES)[number];
 
 export const REQUIREMENT_STATUSES = ["open", "fulfilled", "closed"] as const;

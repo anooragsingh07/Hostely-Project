@@ -1,11 +1,19 @@
-import {
-  HOSTEL_NAMES,
-  ITEM_CATEGORIES,
-  ITEM_CONDITIONS,
-  ITEM_STATUSES,
-  MARKETPLACE_LIMITS,
-} from "@hostely/shared";
+import { HOSTEL_NAMES, ITEM_CONDITIONS, ITEM_STATUSES, MARKETPLACE_LIMITS } from "@hostely/shared";
 import { z } from "zod";
+
+/**
+ * Category is validated by shape only at this layer — the service checks
+ * the slug against the dynamic Category collection before persisting. This
+ * keeps the Zod schema synchronous (middleware-friendly) while admins can
+ * still add/retire categories without a schema redeploy.
+ */
+const categoryField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(2)
+  .max(40)
+  .regex(/^[a-z0-9-]+$/, "Invalid category");
 
 /**
  * Hostel field. We accept both the canonical name and a legacy free string
@@ -41,7 +49,7 @@ export const createItemSchema = z.object({
   title: titleField,
   description: descriptionField,
   price: priceField,
-  category: z.enum(ITEM_CATEGORIES),
+  category: categoryField,
   condition: z.enum(ITEM_CONDITIONS),
   hostelName: hostelField.optional(),
   images: imagesField,
@@ -53,7 +61,7 @@ export const updateItemSchema = z
     title: titleField.optional(),
     description: descriptionField.optional(),
     price: priceField.optional(),
-    category: z.enum(ITEM_CATEGORIES).optional(),
+    category: categoryField.optional(),
     condition: z.enum(ITEM_CONDITIONS).optional(),
     status: z.enum(ITEM_STATUSES).optional(),
     images: imagesField,
@@ -68,7 +76,7 @@ const boolQuery = z
 
 export const listItemsQuerySchema = z.object({
   q: z.string().trim().min(1).max(120).optional(),
-  category: z.enum(ITEM_CATEGORIES).optional(),
+  category: categoryField.optional(),
   hostelName: hostelField.optional(),
   /** Anchor hostel for "nearest first" sort. Independent of filter. */
   nearHostel: hostelField.optional(),

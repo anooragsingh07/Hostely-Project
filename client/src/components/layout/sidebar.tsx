@@ -5,9 +5,10 @@ import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { BrandMark } from "@/components/shared/brand-mark";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/cn";
-import { NAV_ITEMS } from "@/lib/nav";
 import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useMe } from "@/features/auth/hooks/use-me";
+import { cn } from "@/lib/cn";
+import { NAV_ITEMS, filterNavForRole } from "@/lib/nav";
 
 /**
  * Left rail nav. Collapses on mobile via parent AppShell.
@@ -16,10 +17,12 @@ import { useAuth } from "@/features/auth/hooks/use-auth";
 export const Sidebar = () => {
   const pathname = usePathname();
   const { signOut } = useAuth();
+  const { user } = useMe();
+  const navItems = filterNavForRole(NAV_ITEMS, user?.role);
 
   return (
-    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-background">
-      <div className="flex h-14 items-center px-4 border-b border-border">
+    <aside className="border-border bg-background flex h-full w-60 shrink-0 flex-col border-r">
+      <div className="border-border flex h-14 items-center border-b px-4">
         <Link href="/dashboard" aria-label="Hostely">
           <BrandMark />
         </Link>
@@ -27,11 +30,9 @@ export const Sidebar = () => {
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul className="space-y-0.5">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active =
-              item.href === "/dashboard"
-                ? pathname === item.href
-                : pathname.startsWith(item.href);
+              item.href === "/dashboard" ? pathname === item.href : pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
               <li key={item.href}>
@@ -53,14 +54,14 @@ export const Sidebar = () => {
         </ul>
       </nav>
 
-      <div className="border-t border-border p-3">
+      <div className="border-border border-t p-3">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => {
             void signOut();
           }}
-          className="w-full justify-start text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground w-full justify-start"
         >
           <LogOut className="h-4 w-4" />
           Sign out

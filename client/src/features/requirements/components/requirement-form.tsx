@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { HOSTELS, ITEM_CATEGORIES } from "@hostely/shared";
+import { HOSTELS } from "@hostely/shared";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useCategories } from "@/features/categories/hooks/use-categories";
 import { cn } from "@/lib/cn";
 
 const HOSTEL_OPTIONS = HOSTELS.map((h) => ({
@@ -39,6 +40,7 @@ const selectClasses = cn(
 );
 
 export const RequirementForm = ({ onCreated }: RequirementFormProps) => {
+  const { categories } = useCategories();
   const {
     register,
     handleSubmit,
@@ -100,9 +102,9 @@ export const RequirementForm = ({ onCreated }: RequirementFormProps) => {
                 onChange={field.onChange}
                 onBlur={field.onBlur}
               >
-                {ITEM_CATEGORIES.map((c) => (
-                  <option key={c} value={c} className="capitalize">
-                    {c}
+                {categories.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.label}
                   </option>
                 ))}
               </select>

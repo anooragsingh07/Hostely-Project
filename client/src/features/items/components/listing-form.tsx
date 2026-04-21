@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { HOSTELS, ITEM_CATEGORIES, ITEM_CONDITIONS } from "@hostely/shared";
+import { HOSTELS, ITEM_CONDITIONS } from "@hostely/shared";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useCategories } from "@/features/categories/hooks/use-categories";
 import { cn } from "@/lib/cn";
 import { itemsApi } from "../services/items.api";
 import { listingSchema, type ListingValues } from "../schemas/item.schema";
@@ -40,6 +41,7 @@ const selectClasses = cn(
  * so the my-listings grid can refetch.
  */
 export const ListingForm = ({ onCreated }: ListingFormProps) => {
+  const { categories } = useCategories();
   const {
     register,
     handleSubmit,
@@ -138,9 +140,9 @@ export const ListingForm = ({ onCreated }: ListingFormProps) => {
                 onChange={field.onChange}
                 onBlur={field.onBlur}
               >
-                {ITEM_CATEGORIES.map((c) => (
-                  <option key={c} value={c} className="capitalize">
-                    {c}
+                {categories.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.label}
                   </option>
                 ))}
               </select>

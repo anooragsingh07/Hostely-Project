@@ -2,11 +2,14 @@ import { createServer } from "node:http";
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
 import { connectDatabase, disconnectDatabase } from "./config/db.js";
+import { categoryService } from "./modules/category/category.service.js";
 import { initSocket } from "./sockets/index.js";
 import { logger } from "./utils/logger.js";
 
 const bootstrap = async (): Promise<void> => {
   await connectDatabase();
+  // Idempotent — only inserts missing baseline categories.
+  await categoryService.seed();
 
   const app = createApp();
   const httpServer = createServer(app);

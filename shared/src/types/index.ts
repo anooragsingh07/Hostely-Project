@@ -7,3 +7,5 @@ export * from "./interest";
 export * from "./comment";
 export * from "./notification";
 export * from "./chat";
+export * from "./category";
+export * from "./analytics";

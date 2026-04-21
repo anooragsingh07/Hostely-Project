@@ -1,4 +1,4 @@
-import { ITEM_CATEGORIES, MARKETPLACE_LIMITS, REQUIREMENT_STATUSES } from "@hostely/shared";
+import { MARKETPLACE_LIMITS, REQUIREMENT_STATUSES } from "@hostely/shared";
 import { Schema, type Types, model, type HydratedDocument, type InferSchemaType } from "mongoose";
 
 /**
@@ -22,7 +22,8 @@ const requirementSchema = new Schema(
       minlength: MARKETPLACE_LIMITS.DESCRIPTION_MIN,
       maxlength: MARKETPLACE_LIMITS.DESCRIPTION_MAX,
     },
-    category: { type: String, enum: ITEM_CATEGORIES, required: true, index: true },
+    // Dynamic taxonomy — see Item model comment.
+    category: { type: String, required: true, trim: true, lowercase: true, index: true },
     budgetMax: {
       type: Number,
       min: MARKETPLACE_LIMITS.PRICE_MIN,

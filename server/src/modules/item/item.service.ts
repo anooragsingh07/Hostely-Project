@@ -1,6 +1,7 @@
 import type { Item, Paginated } from "@hostely/shared";
 import { MARKETPLACE_LIMITS, getHostel } from "@hostely/shared";
 import { AppError } from "../../utils/AppError.js";
+import { categoryService, type CategoryService } from "../category/category.service.js";
 import { userRepository, type IUserRepository } from "../user/user.repository.js";
 import { itemRepository, type IItemRepository } from "./item.repository.js";
 import type { CreateItemBody, ListItemsQuery, UpdateItemBody } from "./item.validator.js";
@@ -15,11 +16,13 @@ export class ItemService {
   constructor(
     private readonly items: IItemRepository,
     private readonly users: IUserRepository,
+    private readonly categories: CategoryService,
   ) {}
 
   async create(ownerId: string, body: CreateItemBody): Promise<Item> {
     const owner = await this.users.findById(ownerId);
     if (!owner) throw AppError.unauthorized("Unknown user");
+    await this.categories.assertActive(body.category);
     // Normalize the hostel through the catalog so aliases ("h-1", "H1")
     // collapse to the canonical display name. Falls back to the owner's
     // profile hostel, which is already canonical at signup time.
@@ -38,6 +41,7 @@ export class ItemService {
   }
 
   async update(id: string, ownerId: string, body: UpdateItemBody): Promise<Item> {
+    if (body.category) await this.categories.assertActive(body.category);
     const updated = await this.items.update(id, ownerId, body);
     if (!updated) throw AppError.notFound("Listing not found");
     return updated;
@@ -78,4 +82,4 @@ export class ItemService {
   }
 }
 
-export const itemService = new ItemService(itemRepository, userRepository);
+export const itemService = new ItemService(itemRepository, userRepository, categoryService);

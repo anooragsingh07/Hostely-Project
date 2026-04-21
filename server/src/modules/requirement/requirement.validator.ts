@@ -1,5 +1,14 @@
-import { ITEM_CATEGORIES, MARKETPLACE_LIMITS, REQUIREMENT_STATUSES } from "@hostely/shared";
+import { MARKETPLACE_LIMITS, REQUIREMENT_STATUSES } from "@hostely/shared";
 import { z } from "zod";
+
+/** Shape-only check — service validates slug against the dynamic catalog. */
+const categoryField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(2)
+  .max(40)
+  .regex(/^[a-z0-9-]+$/, "Invalid category");
 
 const titleField = z
   .string()
@@ -15,7 +24,7 @@ const descriptionField = z
 export const createRequirementSchema = z.object({
   title: titleField,
   description: descriptionField,
-  category: z.enum(ITEM_CATEGORIES),
+  category: categoryField,
   budgetMax: z
     .number()
     .int()
@@ -28,7 +37,7 @@ export type CreateRequirementBody = z.infer<typeof createRequirementSchema>;
 
 export const listRequirementsQuerySchema = z.object({
   q: z.string().trim().min(1).max(120).optional(),
-  category: z.enum(ITEM_CATEGORIES).optional(),
+  category: categoryField.optional(),
   hostelName: z.string().trim().min(2).max(80).optional(),
   status: z.enum(REQUIREMENT_STATUSES).optional(),
   mine: z

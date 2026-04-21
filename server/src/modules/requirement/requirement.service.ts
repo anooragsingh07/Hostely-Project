@@ -1,6 +1,7 @@
 import type { Paginated, Requirement } from "@hostely/shared";
 import { MARKETPLACE_LIMITS, getHostel } from "@hostely/shared";
 import { AppError } from "../../utils/AppError.js";
+import { categoryService, type CategoryService } from "../category/category.service.js";
 import { userRepository, type IUserRepository } from "../user/user.repository.js";
 import { requirementRepository, type IRequirementRepository } from "./requirement.repository.js";
 import type { CreateRequirementBody, ListRequirementsQuery } from "./requirement.validator.js";
@@ -9,11 +10,13 @@ export class RequirementService {
   constructor(
     private readonly reqs: IRequirementRepository,
     private readonly users: IUserRepository,
+    private readonly categories: CategoryService,
   ) {}
 
   async create(ownerId: string, body: CreateRequirementBody): Promise<Requirement> {
     const owner = await this.users.findById(ownerId);
     if (!owner) throw AppError.unauthorized("Unknown user");
+    await this.categories.assertActive(body.category);
     const rawHostel = body.hostelName ?? owner.hostelName;
     const resolved = getHostel(rawHostel)?.name ?? rawHostel;
     return this.reqs.create({
@@ -50,4 +53,8 @@ export class RequirementService {
   }
 }
 
-export const requirementService = new RequirementService(requirementRepository, userRepository);
+export const requirementService = new RequirementService(
+  requirementRepository,
+  userRepository,
+  categoryService,
+);

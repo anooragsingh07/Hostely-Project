@@ -1,9 +1,4 @@
-import {
-  ITEM_CATEGORIES,
-  ITEM_CONDITIONS,
-  ITEM_STATUSES,
-  MARKETPLACE_LIMITS,
-} from "@hostely/shared";
+import { ITEM_CONDITIONS, ITEM_STATUSES, MARKETPLACE_LIMITS } from "@hostely/shared";
 import { Schema, type Types, model, type HydratedDocument, type InferSchemaType } from "mongoose";
 
 /**
@@ -37,7 +32,9 @@ const itemSchema = new Schema(
       min: MARKETPLACE_LIMITS.PRICE_MIN,
       max: MARKETPLACE_LIMITS.PRICE_MAX,
     },
-    category: { type: String, enum: ITEM_CATEGORIES, required: true, index: true },
+    // Dynamic taxonomy — validated against the Category collection at the
+    // service layer so admins can add slugs without a schema migration.
+    category: { type: String, required: true, trim: true, lowercase: true, index: true },
     condition: { type: String, enum: ITEM_CONDITIONS, required: true },
     status: { type: String, enum: ITEM_STATUSES, default: "active", index: true },
     hostelName: { type: String, required: true, trim: true, index: true },

@@ -1,11 +1,12 @@
 "use client";
 
 import type { ItemCategory } from "@hostely/shared";
-import { HOSTELS, ITEM_CATEGORIES } from "@hostely/shared";
+import { HOSTELS } from "@hostely/shared";
 import { MapPin, Search, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { useCategories } from "@/features/categories/hooks/use-categories";
 import { cn } from "@/lib/cn";
 
 export interface ItemFilterValues {
@@ -33,6 +34,7 @@ const HOSTEL_OPTIONS = HOSTELS.map((h) => ({
  * Controlled component — the parent owns state and debounces as needed.
  */
 export const ItemFilters = ({ value, onChange, onReset }: ItemFiltersProps) => {
+  const { categories } = useCategories();
   const dirty = Boolean(value.q || value.category || value.hostelName || value.sortByHostel);
 
   return (
@@ -77,12 +79,12 @@ export const ItemFilters = ({ value, onChange, onReset }: ItemFiltersProps) => {
           active={value.category === ""}
           onClick={() => onChange({ ...value, category: "" })}
         />
-        {ITEM_CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <CategoryChip
-            key={cat}
-            label={cat}
-            active={value.category === cat}
-            onClick={() => onChange({ ...value, category: cat })}
+            key={cat.slug}
+            label={cat.label}
+            active={value.category === cat.slug}
+            onClick={() => onChange({ ...value, category: cat.slug })}
           />
         ))}
       </div>

@@ -1,5 +1,18 @@
-import { ITEM_CATEGORIES, ITEM_CONDITIONS, MARKETPLACE_LIMITS } from "@hostely/shared";
+import { ITEM_CONDITIONS, MARKETPLACE_LIMITS } from "@hostely/shared";
 import { z } from "zod";
+
+/**
+ * Category shape check — matches the server validator. The dynamic
+ * catalog is validated on submit by the API, so we stay permissive
+ * here and let the server's structured error surface in the form.
+ */
+const categoryField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(2, "Pick a category")
+  .max(40)
+  .regex(/^[a-z0-9-]+$/, "Invalid category");
 
 /** Shared listing form schema — same rules the server will re-apply. */
 export const listingSchema = z.object({
@@ -18,7 +31,7 @@ export const listingSchema = z.object({
     .int("Whole rupees only")
     .min(MARKETPLACE_LIMITS.PRICE_MIN, "Price can't be negative")
     .max(MARKETPLACE_LIMITS.PRICE_MAX, "Price is too high"),
-  category: z.enum(ITEM_CATEGORIES, { required_error: "Pick a category" }),
+  category: categoryField,
   condition: z.enum(ITEM_CONDITIONS, { required_error: "Pick a condition" }),
   hostelName: z.string().trim().max(80).optional(),
 });
@@ -35,7 +48,7 @@ export const requirementFormSchema = z.object({
     .trim()
     .min(MARKETPLACE_LIMITS.DESCRIPTION_MIN, "Add a bit more detail")
     .max(MARKETPLACE_LIMITS.DESCRIPTION_MAX),
-  category: z.enum(ITEM_CATEGORIES, { required_error: "Pick a category" }),
+  category: categoryField,
   budgetMax: z
     .union([
       z.literal(""),
