@@ -1,0 +1,84 @@
+import { AppError } from "../../utils/AppError.js";
+import { comparePassword, hashPassword } from "../../utils/password.js";
+import { signJwt } from "../../utils/jwt.js";
+import type { IUserRepository } from "../user/user.repository.js";
+import { userRepository } from "../user/user.repository.js";
+import type { PublicUser } from "../user/user.types.js";
+import type { LoginInput, RegisterInput } from "./auth.validator.js";
+
+export interface AuthResult {
+  token: string;
+  user: PublicUser;
+}
+
+/**
+ * Business rules:
+ *  - Unique email + rollNo.
+ *  - Login requires matching department + hostelName (campus-scoped).
+ *  - Passwords are never returned.
+ */
+export class AuthService {
+  constructor(private readonly users: IUserRepository) {}
+
+  async register(input: RegisterInput): Promise<AuthResult> {
+    if (await this.users.existsByEmailOrRollNo(input.email, input.rollNo)) {
+      throw AppError.conflict("Email or roll number already registered");
+    }
+    const passwordHash = await hashPassword(input.password);
+    const user = await this.users.create({
+      name: input.name,
+      email: input.email,
+      rollNo: input.rollNo,
+      department: input.department,
+      hostelName: input.hostelName,
+      passwordHash,
+    });
+    return { token: this.issueToken(user), user };
+  }
+
+  async login(input: LoginInput): Promise<AuthResult> {
+    const doc = input.email
+      ? await this.users.findByEmailWithPassword(input.email)
+      : await this.users.findByRollNoWithPassword(input.rollNo!);
+
+    // Uniform error to avoid account enumeration.
+    const invalid = AppError.unauthorized("Invalid credentials");
+    if (!doc) throw invalid;
+
+    const passwordOk = await comparePassword(input.password, doc.passwordHash);
+    if (!passwordOk) throw invalid;
+
+    if (
+      doc.department.toLowerCase() !== input.department.toLowerCase() ||
+      doc.hostelName.toLowerCase() !== input.hostelName.toLowerCase()
+    ) {
+      throw AppError.unauthorized("Profile details do not match our records");
+    }
+
+    const user: PublicUser = {
+      id: doc.id as string,
+      name: doc.name,
+      email: doc.email,
+      rollNo: doc.rollNo,
+      department: doc.department,
+      hostelName: doc.hostelName,
+      role: doc.role as "student" | "admin",
+      avatarUrl: doc.avatarUrl ?? undefined,
+      createdAt: doc.createdAt?.toISOString?.() ?? new Date().toISOString(),
+      updatedAt: doc.updatedAt?.toISOString?.() ?? new Date().toISOString(),
+    };
+    return { token: this.issueToken(user), user };
+  }
+
+  async me(userId: string): Promise<PublicUser> {
+    const user = await this.users.findById(userId);
+    if (!user) throw AppError.notFound("User not found");
+    return user;
+  }
+
+  private issueToken(user: PublicUser): string {
+    return signJwt({ sub: user.id, email: user.email, role: user.role });
+  }
+}
+
+export const authService = new AuthService(userRepository);
