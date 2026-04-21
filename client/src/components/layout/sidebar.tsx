@@ -57,7 +57,9 @@ export const Sidebar = () => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={signOut}
+          onClick={() => {
+            void signOut();
+          }}
           className="w-full justify-start text-muted-foreground hover:text-foreground"
         >
           <LogOut className="h-4 w-4" />

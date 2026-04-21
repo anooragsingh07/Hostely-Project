@@ -17,6 +17,8 @@ const EnvSchema = z.object({
 
   BCRYPT_SALT_ROUNDS: z.coerce.number().int().min(10).max(15).default(12),
 
+  SESSION_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7),
+
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
@@ -30,5 +32,6 @@ if (!parsed.success) {
   process.exit(1);
 }
 
+/** Flattened, typed, frozen runtime config. */
 export const env = Object.freeze(parsed.data);
 export type Env = typeof env;

@@ -1,7 +1,10 @@
 import type { PublicUser } from "./user";
 
+/**
+ * The HTTP-only session cookie is the source of truth for auth;
+ * the response body only needs to hydrate the UI.
+ */
 export interface AuthResponse {
-  token: string;
   user: PublicUser;
 }
 

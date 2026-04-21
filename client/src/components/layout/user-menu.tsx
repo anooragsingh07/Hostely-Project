@@ -71,7 +71,11 @@ export const UserMenu = ({ name = "Guest", email }: UserMenuProps) => {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={signOut}>
+        <DropdownMenuItem
+          onSelect={() => {
+            void signOut();
+          }}
+        >
           <LogOut className="h-4 w-4" />
           Sign out
         </DropdownMenuItem>

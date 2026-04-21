@@ -1,12 +1,14 @@
+import { AUTH_ERROR_CODES } from "@hostely/shared";
 import { AppError } from "../../utils/AppError.js";
-import { comparePassword, hashPassword } from "../../utils/password.js";
 import { signJwt } from "../../utils/jwt.js";
+import { comparePassword, hashPassword } from "../../utils/password.js";
 import type { IUserRepository } from "../user/user.repository.js";
 import { userRepository } from "../user/user.repository.js";
 import type { PublicUser } from "../user/user.types.js";
 import type { LoginInput, RegisterInput } from "./auth.validator.js";
 
 export interface AuthResult {
+  /** JWT — consumed by the controller to set the session cookie. */
   token: string;
   user: PublicUser;
 }
@@ -14,6 +16,7 @@ export interface AuthResult {
 /**
  * Business rules:
  *  - Unique email + rollNo.
+ *  - Email domain allow-list enforced by the validator, not here.
  *  - Login requires matching department + hostelName (campus-scoped).
  *  - Passwords are never returned.
  */
@@ -42,7 +45,7 @@ export class AuthService {
       : await this.users.findByRollNoWithPassword(input.rollNo!);
 
     // Uniform error to avoid account enumeration.
-    const invalid = AppError.unauthorized("Invalid credentials");
+    const invalid = new AppError("Invalid credentials", 401, AUTH_ERROR_CODES.INVALID_CREDENTIALS);
     if (!doc) throw invalid;
 
     const passwordOk = await comparePassword(input.password, doc.passwordHash);
@@ -52,7 +55,11 @@ export class AuthService {
       doc.department.toLowerCase() !== input.department.toLowerCase() ||
       doc.hostelName.toLowerCase() !== input.hostelName.toLowerCase()
     ) {
-      throw AppError.unauthorized("Profile details do not match our records");
+      throw new AppError(
+        "Profile details do not match our records",
+        401,
+        AUTH_ERROR_CODES.PROFILE_MISMATCH,
+      );
     }
 
     const user: PublicUser = {
