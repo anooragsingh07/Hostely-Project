@@ -29,6 +29,7 @@ const userSchema = new Schema(
     hostelName: { type: String, required: true, trim: true, index: true },
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ROLE_VALUES, default: ROLES.STUDENT, index: true },
+    banned: { type: Boolean, default: false, index: true },
     avatarUrl: { type: String },
   },
   { timestamps: true, versionKey: false },

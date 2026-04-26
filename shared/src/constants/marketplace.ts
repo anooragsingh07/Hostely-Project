@@ -35,7 +35,11 @@ export type ItemCondition = (typeof ITEM_CONDITIONS)[number];
 export const ITEM_STATUSES = ["active", "sold", "withdrawn", "removed"] as const;
 export type ItemStatus = (typeof ITEM_STATUSES)[number];
 
-export const REQUIREMENT_STATUSES = ["open", "fulfilled", "closed"] as const;
+/**
+ * `removed` — admin moderation; hidden from the public requirements board
+ * like `removed` listings.
+ */
+export const REQUIREMENT_STATUSES = ["open", "fulfilled", "closed", "removed"] as const;
 export type RequirementStatus = (typeof REQUIREMENT_STATUSES)[number];
 
 /** Parent surfaces a comment can attach to. */

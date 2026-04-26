@@ -12,6 +12,8 @@ import type { CreateItemInput, ListItemsFilter, UpdateItemInput } from "./item.t
 export interface IItemRepository {
   create(input: CreateItemInput): Promise<Item>;
   update(id: string, ownerId: string, patch: UpdateItemInput): Promise<Item | null>;
+  /** Moderation / admin — does not check listing ownership. */
+  updateAsAdmin(id: string, patch: UpdateItemInput): Promise<Item | null>;
   delete(id: string, ownerId: string): Promise<boolean>;
   findById(id: string): Promise<Item | null>;
   list(filter: ListItemsFilter): Promise<Paginated<Item>>;
@@ -91,6 +93,18 @@ export class ItemRepository implements IItemRepository {
     return toPublic(doc, owner);
   }
 
+  async updateAsAdmin(id: string, patch: UpdateItemInput): Promise<Item | null> {
+    if (!Types.ObjectId.isValid(id)) return null;
+    const doc = (await ItemModel.findByIdAndUpdate(
+      id,
+      { $set: patch },
+      { new: true, runValidators: true },
+    ).exec()) as unknown as ItemDoc | null;
+    if (!doc) return null;
+    const owner = await loadOwner(doc.owner);
+    return toPublic(doc, owner);
+  }
+
   async delete(id: string, ownerId: string): Promise<boolean> {
     if (!Types.ObjectId.isValid(id)) return false;
     const res = await ItemModel.deleteOne({
@@ -111,11 +125,11 @@ export class ItemRepository implements IItemRepository {
   async list(filter: ListItemsFilter): Promise<Paginated<Item>> {
     const query: FilterQuery<ItemDoc> = {};
     if (filter.category) query.category = filter.category;
-    if (filter.hostelName) query.hostelName = filter.hostelName;
     if (filter.status) query.status = filter.status;
     else query.status = "active";
     if (filter.ownerId) query.owner = new Types.ObjectId(filter.ownerId);
     if (filter.q) query.$text = { $search: filter.q };
+    this.applyAudienceHostelFilter(query, filter);
 
     const skip = (filter.page - 1) * filter.pageSize;
 
@@ -192,6 +206,29 @@ export class ItemRepository implements IItemRepository {
   async incrementInterestsCount(id: string, delta: number): Promise<void> {
     if (!Types.ObjectId.isValid(id)) return;
     await ItemModel.updateOne({ _id: id }, { $inc: { interestsCount: delta } }).exec();
+  }
+
+  /**
+   * "My listings" ignores the segment gate. Otherwise listings are limited to
+   * `audienceHostelNames` when provided, intersected with an optional hostel filter.
+   */
+  private applyAudienceHostelFilter(query: FilterQuery<ItemDoc>, filter: ListItemsFilter): void {
+    if (filter.ownerId) {
+      if (filter.hostelName) query.hostelName = filter.hostelName;
+      return;
+    }
+
+    const audience = filter.audienceHostelNames;
+    if (audience?.length) {
+      if (filter.hostelName) {
+        query.hostelName = audience.includes(filter.hostelName) ? filter.hostelName : { $in: [] };
+      } else {
+        query.hostelName = { $in: [...audience] };
+      }
+      return;
+    }
+
+    if (filter.hostelName) query.hostelName = filter.hostelName;
   }
 }
 

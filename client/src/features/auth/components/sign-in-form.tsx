@@ -31,7 +31,7 @@ export const SignInForm = () => {
         id="email"
         type="email"
         label="Email"
-        placeholder="you@campus.edu"
+        placeholder="you@cgc.edu.in"
         autoComplete="email"
         {...register("email")}
         error={errors.email?.message}
@@ -46,7 +46,7 @@ export const SignInForm = () => {
         error={errors.rollNo?.message}
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
         <FormField
           id="department"
           label="Department"
@@ -57,7 +57,7 @@ export const SignInForm = () => {
         <FormField
           id="hostelName"
           label="Hostel"
-          placeholder="Ganga Hostel"
+          placeholder="e.g. Sukhsagar or Kalpna"
           {...register("hostelName")}
           error={errors.hostelName?.message}
         />

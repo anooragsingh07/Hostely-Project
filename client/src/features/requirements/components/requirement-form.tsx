@@ -1,8 +1,9 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { HOSTELS } from "@hostely/shared";
+import { hostelsInViewerSegment } from "@hostely/shared";
 import { Controller, useForm } from "react-hook-form";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field-error";
@@ -10,23 +11,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCategories } from "@/features/categories/hooks/use-categories";
-import { cn } from "@/lib/cn";
-
-const HOSTEL_OPTIONS = HOSTELS.map((h) => ({
-  value: h.name,
-  label: h.name,
-  group: `${h.zone[0]?.toUpperCase()}${h.zone.slice(1)} zone`,
-}));
 import {
   requirementFormSchema,
   type RequirementFormValues,
 } from "@/features/items/schemas/item.schema";
+import { useMe } from "@/features/auth/hooks/use-me";
+import { useCategories } from "@/features/categories/hooks/use-categories";
+import { cn } from "@/lib/cn";
+import { getApiErrorMessage } from "@/lib/error-message";
 import { requirementsApi } from "../services/requirements.api";
-
-interface ApiError {
-  message?: string;
-}
 
 interface RequirementFormProps {
   onCreated?: () => void;
@@ -40,7 +33,17 @@ const selectClasses = cn(
 );
 
 export const RequirementForm = ({ onCreated }: RequirementFormProps) => {
+  const { user } = useMe();
   const { categories } = useCategories();
+  const hostelOptions = useMemo(
+    () =>
+      hostelsInViewerSegment(user?.hostelName).map((h) => ({
+        value: h.name,
+        label: h.name,
+        group: h.segment === "boys" ? "Boys hostels" : "Girls hostels",
+      })),
+    [user?.hostelName],
+  );
   const {
     register,
     handleSubmit,
@@ -71,7 +74,7 @@ export const RequirementForm = ({ onCreated }: RequirementFormProps) => {
       reset();
       onCreated?.();
     } catch (e) {
-      toast.error((e as ApiError).message ?? "Could not post requirement");
+      toast.error(getApiErrorMessage(e, "Could not post requirement"));
     }
   });
 
@@ -138,7 +141,7 @@ export const RequirementForm = ({ onCreated }: RequirementFormProps) => {
               onChange={field.onChange}
               onBlur={field.onBlur}
               placeholder="Use profile hostel"
-              options={HOSTEL_OPTIONS}
+              options={hostelOptions}
               aria-invalid={Boolean(errors.hostelName)}
             />
           )}

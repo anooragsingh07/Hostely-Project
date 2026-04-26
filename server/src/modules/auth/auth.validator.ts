@@ -23,7 +23,7 @@ const passwordField = z
   .regex(/[A-Za-z]/, "Must contain a letter")
   .regex(/[0-9]/, "Must contain a number");
 
-export const registerSchema = z.object({
+const registerFieldsSchema = z.object({
   name: z.string().trim().min(VALIDATION.NAME_MIN).max(VALIDATION.NAME_MAX),
   email: collegeEmailField,
   rollNo: rollNoField,
@@ -31,7 +31,19 @@ export const registerSchema = z.object({
   hostelName: z.string().trim().min(VALIDATION.HOSTEL_MIN).max(VALIDATION.HOSTEL_MAX),
   password: passwordField,
 });
-export type RegisterInput = z.infer<typeof registerSchema>;
+
+/** Persisted user fields only — `acceptPolicies` is validated then stripped. */
+export type RegisterInput = z.infer<typeof registerFieldsSchema>;
+
+export const registerSchema = registerFieldsSchema.extend({
+  acceptPolicies: z.literal(true, {
+    errorMap: () => ({
+      message: "You must accept the Terms & Conditions and Privacy Policy",
+    }),
+  }),
+});
+
+export type RegisterRequestBody = z.infer<typeof registerSchema>;
 
 /**
  * Sign-in accepts email OR rollNo as identifier, plus the contextual

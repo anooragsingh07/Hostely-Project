@@ -3,11 +3,8 @@
 import type { Item, ItemListFilters, Paginated } from "@hostely/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/error-message";
 import { itemsApi } from "../services/items.api";
-
-interface ApiError {
-  message?: string;
-}
 
 interface UseItemsResult {
   data: Paginated<Item> | null;
@@ -34,7 +31,7 @@ export const useItems = (filters: ItemListFilters): UseItemsResult => {
       const page = await itemsApi.list(filters);
       if (reqIdRef.current === myReqId) setData(page);
     } catch (e) {
-      const msg = (e as ApiError).message ?? "Could not load listings";
+      const msg = getApiErrorMessage(e, "Could not load listings");
       if (reqIdRef.current === myReqId) setError(msg);
       toast.error(msg);
     } finally {

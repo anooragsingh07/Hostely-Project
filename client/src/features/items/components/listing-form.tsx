@@ -1,8 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { HOSTELS, ITEM_CONDITIONS } from "@hostely/shared";
+import { ITEM_CONDITIONS, hostelsInViewerSegment } from "@hostely/shared";
 import { Controller, useForm } from "react-hook-form";
+import Link from "next/link";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field-error";
@@ -10,23 +12,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useMe } from "@/features/auth/hooks/use-me";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { cn } from "@/lib/cn";
+import { getApiErrorMessage } from "@/lib/error-message";
 import { itemsApi } from "../services/items.api";
 import { listingSchema, type ListingValues } from "../schemas/item.schema";
 
-const HOSTEL_OPTIONS = HOSTELS.map((h) => ({
-  value: h.name,
-  label: h.name,
-  group: `${h.zone[0]?.toUpperCase()}${h.zone.slice(1)} zone`,
-}));
-
 interface ListingFormProps {
   onCreated?: () => void;
-}
-
-interface ApiError {
-  message?: string;
 }
 
 const selectClasses = cn(
@@ -41,7 +35,17 @@ const selectClasses = cn(
  * so the my-listings grid can refetch.
  */
 export const ListingForm = ({ onCreated }: ListingFormProps) => {
+  const { user } = useMe();
   const { categories } = useCategories();
+  const hostelOptions = useMemo(
+    () =>
+      hostelsInViewerSegment(user?.hostelName).map((h) => ({
+        value: h.name,
+        label: h.name,
+        group: h.segment === "boys" ? "Boys hostels" : "Girls hostels",
+      })),
+    [user?.hostelName],
+  );
   const {
     register,
     handleSubmit,
@@ -74,12 +78,23 @@ export const ListingForm = ({ onCreated }: ListingFormProps) => {
       reset();
       onCreated?.();
     } catch (e) {
-      toast.error((e as ApiError).message ?? "Could not publish listing");
+      toast.error(getApiErrorMessage(e, "Could not publish listing"));
     }
   });
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      <p className="border-border bg-muted/30 text-muted-foreground rounded-lg border px-3 py-2 text-xs leading-relaxed">
+        Make sure your listing follows our{" "}
+        <Link
+          href="/prohibited-items"
+          className="text-foreground font-medium underline underline-offset-4"
+        >
+          Prohibited Items Policy
+        </Link>
+        .
+      </p>
+
       <div className="space-y-1.5">
         <Label htmlFor="listing-title">Title</Label>
         <Input
@@ -117,7 +132,7 @@ export const ListingForm = ({ onCreated }: ListingFormProps) => {
                 onChange={field.onChange}
                 onBlur={field.onBlur}
                 placeholder="Use profile hostel"
-                options={HOSTEL_OPTIONS}
+                options={hostelOptions}
                 aria-invalid={Boolean(errors.hostelName)}
               />
             )}

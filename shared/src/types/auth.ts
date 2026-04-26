@@ -23,4 +23,6 @@ export interface SignUpCredentials {
   department: string;
   hostelName: string;
   password: string;
+  /** Must be `true` — required for legal consent at registration. */
+  acceptPolicies: boolean;
 }

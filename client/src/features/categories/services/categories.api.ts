@@ -1,10 +1,6 @@
 import type { Category } from "@hostely/shared";
 import { apiClient } from "@/lib/api-client";
-
-interface ApiEnvelope<T> {
-  success: boolean;
-  data: T;
-}
+import type { ApiEnvelope } from "@/lib/api-types";
 
 export const categoriesApi = {
   /** Active categories — the list every filter and form dropdown renders. */

@@ -4,13 +4,9 @@ import type { AuthResponse } from "@hostely/shared";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/error-message";
 import { authApi } from "../services/auth.api";
 import type { SignInValues, SignUpValues } from "../schemas/auth.schema";
-
-interface ApiError {
-  code?: string;
-  message?: string;
-}
 
 /**
  * Encapsulates auth side-effects: redirect, toasts, server-side logout.
@@ -21,9 +17,9 @@ export const useAuth = () => {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSuccess = (res: AuthResponse, greeting: string): void => {
+  const handleSuccess = (res: AuthResponse, greeting: string, path = "/dashboard"): void => {
     toast.success(`${greeting}, ${res.user.name.split(" ")[0]}`);
-    router.push("/dashboard");
+    router.push(path);
     router.refresh();
   };
 
@@ -31,9 +27,9 @@ export const useAuth = () => {
     setSubmitting(true);
     try {
       const res = await authApi.register(values);
-      handleSuccess(res, "Welcome");
+      handleSuccess(res, "Welcome", "/dashboard?welcome=1");
     } catch (e) {
-      toast.error((e as ApiError).message ?? "Could not create account");
+      toast.error(getApiErrorMessage(e, "Could not create account"));
     } finally {
       setSubmitting(false);
     }
@@ -45,7 +41,7 @@ export const useAuth = () => {
       const res = await authApi.login(values);
       handleSuccess(res, "Welcome back");
     } catch (e) {
-      toast.error((e as ApiError).message ?? "Could not sign in");
+      toast.error(getApiErrorMessage(e, "Could not sign in"));
     } finally {
       setSubmitting(false);
     }

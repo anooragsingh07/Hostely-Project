@@ -47,12 +47,21 @@ export default function AdminDashboardPage() {
       title="Admin overview"
       description="Marketplace health across items, requirements, and moderation."
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard/admin/users">Users</Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard/admin/requirements">Requirements</Link>
+          </Button>
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard/admin/categories">Categories</Link>
           </Button>
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard/admin/moderation">Moderation</Link>
+            <Link href="/dashboard/admin/moderation">Listings</Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard/admin/content">Chat & comments</Link>
           </Button>
           <Button
             size="sm"

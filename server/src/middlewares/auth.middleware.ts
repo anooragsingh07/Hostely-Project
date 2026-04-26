@@ -1,7 +1,18 @@
-import { SESSION_COOKIE_NAME } from "@hostely/shared";
+import { ROLES, SESSION_COOKIE_NAME } from "@hostely/shared";
 import type { NextFunction, Request, Response } from "express";
+import { UserModel } from "../modules/user/user.model.js";
 import { verifyJwt, type JwtPayload } from "../utils/jwt.js";
 import { AppError } from "../utils/AppError.js";
+
+/**
+ * Authentication & authorization boundary (server-only).
+ *
+ * - Every protected HTTP route must use `requireAuth` (and `requireRole` when needed).
+ * - The JWT is verified with `JWT_SECRET` on each request; the browser cannot forge it.
+ * - Next.js middleware only checks cookie presence for UX redirects — it is not a security control.
+ * - For admin, we re-check `role` in MongoDB so a demotion takes effect immediately (JWT may still
+ *   contain a stale `role` until it expires).
+ */
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -30,16 +41,39 @@ const extractToken = (req: Request): string | null => {
 };
 
 export const requireAuth = (req: Request, _res: Response, next: NextFunction): void => {
-  const token = extractToken(req);
-  if (!token) throw AppError.unauthorized("Not authenticated");
-  req.user = verifyJwt(token);
-  next();
+  void (async (): Promise<void> => {
+    try {
+      const token = extractToken(req);
+      if (!token) throw AppError.unauthorized("Not authenticated");
+      req.user = verifyJwt(token);
+      const suspended = await UserModel.exists({ _id: req.user.sub, banned: true }).exec();
+      if (suspended) throw AppError.forbidden("Account suspended");
+      next();
+    } catch (err) {
+      next(err);
+    }
+  })();
 };
 
 export const requireRole =
   (...roles: Array<JwtPayload["role"]>) =>
   (req: Request, _res: Response, next: NextFunction): void => {
-    if (!req.user) throw AppError.unauthorized();
-    if (!roles.includes(req.user.role)) throw AppError.forbidden("Insufficient role");
-    next();
+    void (async (): Promise<void> => {
+      try {
+        if (!req.user) throw AppError.unauthorized();
+        if (!roles.includes(req.user.role)) throw AppError.forbidden("Insufficient role");
+
+        if (req.user.role === ROLES.ADMIN) {
+          const doc = await UserModel.findById(req.user.sub)
+            .select("role")
+            .lean<{ role: JwtPayload["role"] } | null>()
+            .exec();
+          if (!doc || doc.role !== ROLES.ADMIN) throw AppError.forbidden("Insufficient role");
+        }
+
+        next();
+      } catch (err) {
+        next(err);
+      }
+    })();
   };

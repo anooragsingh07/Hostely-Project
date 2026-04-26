@@ -17,11 +17,20 @@ export default function SignInPage() {
       </CardHeader>
       <CardContent className="space-y-6">
         <SignInForm />
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-center text-xs">
+          <Link href="/terms-and-conditions" className="underline-offset-4 hover:underline">
+            Terms
+          </Link>
+          {" · "}
+          <Link href="/privacy-policy" className="underline-offset-4 hover:underline">
+            Privacy
+          </Link>
+        </p>
+        <p className="text-muted-foreground text-center text-sm">
           New to Hostely?{" "}
           <Link
             href="/sign-up"
-            className="font-medium text-foreground underline-offset-4 hover:underline"
+            className="text-foreground font-medium underline-offset-4 hover:underline"
           >
             Create an account
           </Link>

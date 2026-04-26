@@ -14,9 +14,8 @@ interface AdminGuardProps {
 }
 
 /**
- * Client-side admin gate. The API already enforces role on every request,
- * but this component avoids flashing admin UI to a student — and bounces
- * them back to the dashboard with a polite URL change.
+ * Client-side admin gate for UX only (hide admin chrome, avoid flash of restricted content).
+ * `/api/v1/admin/*` rejects non-admins with 403 regardless of anything done in the browser console.
  */
 export const AdminGuard = ({ title, description, actions, children }: AdminGuardProps) => {
   const router = useRouter();

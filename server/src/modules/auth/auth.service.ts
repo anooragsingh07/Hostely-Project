@@ -54,6 +54,8 @@ export class AuthService {
     const passwordOk = await comparePassword(input.password, doc.passwordHash);
     if (!passwordOk) throw invalid;
 
+    if (doc.banned) throw AppError.forbidden("Account suspended");
+
     if (
       doc.department.toLowerCase() !== input.department.toLowerCase() ||
       doc.hostelName.toLowerCase() !== input.hostelName.toLowerCase()
@@ -73,6 +75,7 @@ export class AuthService {
       department: doc.department,
       hostelName: doc.hostelName,
       role: doc.role as PublicUser["role"],
+      banned: Boolean(doc.banned),
       avatarUrl: doc.avatarUrl ?? undefined,
       createdAt: doc.createdAt?.toISOString?.() ?? new Date().toISOString(),
       updatedAt: doc.updatedAt?.toISOString?.() ?? new Date().toISOString(),

@@ -3,11 +3,8 @@
 import type { Paginated, Requirement, RequirementListFilters } from "@hostely/shared";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/error-message";
 import { requirementsApi } from "../services/requirements.api";
-
-interface ApiError {
-  message?: string;
-}
 
 export interface UseRequirementsResult {
   data: Paginated<Requirement> | null;
@@ -30,7 +27,7 @@ export const useRequirements = (filters: RequirementListFilters): UseRequirement
       const page = await requirementsApi.list(filters);
       if (reqIdRef.current === myReqId) setData(page);
     } catch (e) {
-      const msg = (e as ApiError).message ?? "Could not load requirements";
+      const msg = getApiErrorMessage(e, "Could not load requirements");
       if (reqIdRef.current === myReqId) setError(msg);
       toast.error(msg);
     } finally {

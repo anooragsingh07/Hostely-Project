@@ -2,8 +2,10 @@ import type { NextFunction, Request, Response } from "express";
 import mongoSanitize from "express-mongo-sanitize";
 
 /**
- * Strips MongoDB operator keys ($gt, etc.) from `body`, `query`, `params`,
- * and `headers` so user-controlled objects cannot widen queries.
+ * Defense-in-depth for NoSQL injection: strips `$`-prefixed operator keys from `body`, `query`,
+ * `params`, and `headers` before they reach handlers. Repositories still use structured filters /
+ * bound values (no string-built query documents). This stack uses MongoDB, not SQL — there are no
+ * raw concatenated SQL strings to parameterize.
  */
 export const mongoInjectionSanitizer = mongoSanitize({
   replaceWith: "_",

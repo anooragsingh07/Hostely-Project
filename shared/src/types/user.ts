@@ -9,6 +9,8 @@ export interface PublicUser {
   department: string;
   hostelName: string;
   role: Role;
+  /** When true, sign-in and API access are blocked until lifted by an admin. */
+  banned?: boolean;
   avatarUrl?: string;
   createdAt: string;
   updatedAt: string;

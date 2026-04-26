@@ -4,7 +4,7 @@ import { created, ok } from "../../utils/apiResponse.js";
 import { AppError } from "../../utils/AppError.js";
 import { clearSessionCookie, setSessionCookie } from "../../utils/cookies.js";
 import { authService } from "./auth.service.js";
-import type { LoginInput, RegisterInput } from "./auth.validator.js";
+import type { LoginInput, RegisterInput, RegisterRequestBody } from "./auth.validator.js";
 
 /**
  * Thin HTTP layer. No business logic here — only request/response plumbing.
@@ -13,7 +13,8 @@ import type { LoginInput, RegisterInput } from "./auth.validator.js";
  */
 export const authController = {
   register: asyncHandler(async (req: Request, res: Response) => {
-    const { token, user } = await authService.register(req.body as RegisterInput);
+    const { acceptPolicies: _acceptPolicies, ...input } = req.body as RegisterRequestBody;
+    const { token, user } = await authService.register(input as RegisterInput);
     setSessionCookie(res, token);
     return created(res, { user });
   }),

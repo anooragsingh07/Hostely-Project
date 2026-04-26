@@ -2,12 +2,14 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HOSTELS } from "@hostely/shared";
+import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field-error";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { cn } from "@/lib/cn";
 import { FormField } from "./form-field";
 import { signUpSchema, type SignUpValues } from "../schemas/auth.schema";
 import { useAuth } from "../hooks/use-auth";
@@ -15,7 +17,7 @@ import { useAuth } from "../hooks/use-auth";
 const HOSTEL_OPTIONS = HOSTELS.map((h) => ({
   value: h.name,
   label: h.name,
-  group: `${h.zone[0]?.toUpperCase()}${h.zone.slice(1)} zone`,
+  group: h.segment === "boys" ? "Boys hostels" : "Girls hostels",
 }));
 
 export const SignUpForm = () => {
@@ -34,6 +36,7 @@ export const SignUpForm = () => {
       department: "",
       hostelName: "",
       password: "",
+      acceptPolicies: false,
     },
   });
 
@@ -52,7 +55,7 @@ export const SignUpForm = () => {
         id="email"
         type="email"
         label="Email"
-        placeholder="you@campus.edu"
+        placeholder="you@cgc.edu.in"
         autoComplete="email"
         {...register("email")}
         error={errors.email?.message}
@@ -67,7 +70,7 @@ export const SignUpForm = () => {
         error={errors.rollNo?.message}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
         <FormField
           id="department"
           label="Department"
@@ -76,7 +79,9 @@ export const SignUpForm = () => {
           error={errors.department?.message}
         />
         <div className="space-y-1.5">
-          <Label htmlFor="hostelName">Hostel</Label>
+          <div className="flex items-baseline justify-between">
+            <Label htmlFor="hostelName">Hostel</Label>
+          </div>
           <Controller
             control={control}
             name="hostelName"
@@ -106,6 +111,52 @@ export const SignUpForm = () => {
         {...register("password")}
         error={errors.password?.message}
       />
+
+      <div className="space-y-2">
+        <Controller
+          control={control}
+          name="acceptPolicies"
+          render={({ field }) => (
+            <label
+              className={cn(
+                "border-border bg-muted/30 text-muted-foreground flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm leading-snug",
+                errors.acceptPolicies && "border-destructive/50",
+              )}
+            >
+              <input
+                type="checkbox"
+                className="border-input text-primary focus-visible:ring-ring mt-0.5 h-4 w-4 rounded"
+                checked={field.value}
+                onChange={(e) => field.onChange(e.target.checked)}
+                onBlur={field.onBlur}
+                aria-invalid={Boolean(errors.acceptPolicies)}
+              />
+              <span>
+                I agree to the{" "}
+                <Link
+                  href="/terms-and-conditions"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground font-medium underline underline-offset-4 hover:no-underline"
+                >
+                  Terms &amp; Conditions
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground font-medium underline underline-offset-4 hover:no-underline"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </span>
+            </label>
+          )}
+        />
+        <FieldError message={errors.acceptPolicies?.message} />
+      </div>
 
       <Button type="submit" className="w-full" disabled={submitting}>
         {submitting ? (

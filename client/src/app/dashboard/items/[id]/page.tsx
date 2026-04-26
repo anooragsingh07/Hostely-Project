@@ -34,10 +34,7 @@ const CommentThread = dynamic(
 );
 import { itemsApi } from "@/features/items/services/items.api";
 import { formatPrice, formatRelative } from "@/lib/format";
-
-interface ApiError {
-  message?: string;
-}
+import { getApiErrorMessage } from "@/lib/error-message";
 
 export default function ItemDetailPage() {
   const params = useParams<{ id: string }>();
@@ -56,8 +53,8 @@ export default function ItemDetailPage() {
       .then((data) => {
         if (!cancelled) setItem(data);
       })
-      .catch((e: ApiError) => {
-        toast.error(e.message ?? "Could not load listing");
+      .catch((e: unknown) => {
+        toast.error(getApiErrorMessage(e, "Could not load listing"));
         router.push("/dashboard/buy");
       })
       .finally(() => {
@@ -78,7 +75,7 @@ export default function ItemDetailPage() {
       toast.success("Listing removed");
       router.push("/dashboard/sell");
     } catch (e) {
-      toast.error((e as ApiError).message ?? "Could not delete listing");
+      toast.error(getApiErrorMessage(e, "Could not delete listing"));
     }
   };
 

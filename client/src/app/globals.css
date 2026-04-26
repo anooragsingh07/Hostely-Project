@@ -82,6 +82,25 @@
   }
 }
 
+/* Legal / policy pages — nested headings and lists */
+@layer components {
+  .policy-prose h2 {
+    @apply text-foreground mt-8 text-base font-semibold first:mt-0;
+  }
+  .policy-prose h3 {
+    @apply text-foreground mt-4 text-sm font-semibold;
+  }
+  .policy-prose ul {
+    @apply list-disc space-y-1 pl-5;
+  }
+  .policy-prose ol {
+    @apply list-decimal space-y-1 pl-5;
+  }
+  .policy-prose strong {
+    @apply text-foreground font-medium;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -93,13 +112,11 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    font-feature-settings: "cv11", "ss01";
-    font-variation-settings: "opsz" 32;
   }
 
   /* Global focus ring — keeps accessibility consistent across inputs. */
   :focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+    @apply ring-ring ring-offset-background outline-none ring-2 ring-offset-2;
   }
 
   ::selection {

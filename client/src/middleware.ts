@@ -2,10 +2,12 @@ import { SESSION_COOKIE_NAME } from "@hostely/shared";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Cookie-presence guard. The API performs full JWT verification on every
- * protected request; the middleware only prevents unauthenticated users
- * from reaching dashboard pages (and from bouncing back to auth pages
- * after they're already signed in).
+ * UX-only route guard (not a security boundary).
+ *
+ * This checks that the session cookie exists so logged-out users do not see dashboard shells.
+ * Anyone can bypass this in DevTools or by calling the API directly — that is expected.
+ * All real authentication and authorization happens on the server: JWT signature verification,
+ * `requireAuth` / `requireRole`, and per-resource checks in services (ownership, segment, etc.).
  */
 /**
  * Dev-only escape hatch: when NEXT_PUBLIC_PREVIEW_MODE=1, skip the

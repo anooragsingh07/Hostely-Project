@@ -1,5 +1,7 @@
 import type { Interest } from "@hostely/shared";
+import { getHostelSegmentForUserHostel } from "@hostely/shared";
 import { AppError } from "../../utils/AppError.js";
+import { userRepository, type IUserRepository } from "../user/user.repository.js";
 import { itemRepository, type IItemRepository } from "../item/item.repository.js";
 import { notificationService } from "../notification/notification.service.js";
 import { interestRepository, type IInterestRepository } from "./interest.repository.js";
@@ -14,6 +16,7 @@ export class InterestService {
   constructor(
     private readonly interests: IInterestRepository,
     private readonly items: IItemRepository,
+    private readonly users: IUserRepository,
   ) {}
 
   async mark(itemId: string, userId: string, note?: string): Promise<Interest> {
@@ -21,6 +24,14 @@ export class InterestService {
     if (!item) throw AppError.notFound("Listing not found");
     if (item.author.id === userId) {
       throw AppError.badRequest("You cannot mark interest on your own listing");
+    }
+    const viewer = await this.users.findById(userId);
+    if (viewer) {
+      const vSeg = getHostelSegmentForUserHostel(viewer.hostelName);
+      const iSeg = getHostelSegmentForUserHostel(item.hostelName);
+      if (vSeg && iSeg && vSeg !== iSeg) {
+        throw AppError.notFound("Listing not found");
+      }
     }
 
     const { interest, created } = await this.interests.add(itemId, userId, note);
@@ -58,4 +69,8 @@ export class InterestService {
   }
 }
 
-export const interestService = new InterestService(interestRepository, itemRepository);
+export const interestService = new InterestService(
+  interestRepository,
+  itemRepository,
+  userRepository,
+);

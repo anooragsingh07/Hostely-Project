@@ -36,7 +36,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     }, [options]);
 
     return (
-      <div className={cn("relative inline-flex w-full", className)}>
+      <div className={cn("relative flex min-h-10 w-full", className)}>
         <select
           ref={ref}
           value={value}

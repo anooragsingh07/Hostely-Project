@@ -1,5 +1,11 @@
-import type { Item, Paginated } from "@hostely/shared";
-import { MARKETPLACE_LIMITS, getHostel } from "@hostely/shared";
+import type { Item, Paginated, Role } from "@hostely/shared";
+import {
+  MARKETPLACE_LIMITS,
+  ROLES,
+  getHostel,
+  getHostelSegmentForUserHostel,
+  hostelNamesInSegment,
+} from "@hostely/shared";
 import { AppError } from "../../utils/AppError.js";
 import { categoryService, type CategoryService } from "../category/category.service.js";
 import { userRepository, type IUserRepository } from "../user/user.repository.js";
@@ -28,6 +34,11 @@ export class ItemService {
     // profile hostel, which is already canonical at signup time.
     const rawHostel = body.hostelName ?? owner.hostelName;
     const resolved = getHostel(rawHostel)?.name ?? rawHostel;
+    const ownerSeg = getHostelSegmentForUserHostel(owner.hostelName);
+    const listingSeg = getHostelSegmentForUserHostel(resolved);
+    if (ownerSeg && listingSeg && ownerSeg !== listingSeg) {
+      throw AppError.badRequest("Listing hostel must be in your hostel segment");
+    }
     return this.items.create({
       ownerId,
       title: body.title,
@@ -52,21 +63,34 @@ export class ItemService {
     if (!ok) throw AppError.notFound("Listing not found");
   }
 
-  async get(id: string): Promise<Item> {
+  async get(id: string, viewerId: string, viewerRole: Role): Promise<Item> {
     const item = await this.items.findById(id);
     if (!item) throw AppError.notFound("Listing not found");
+    if (viewerRole !== ROLES.ADMIN) {
+      const viewer = await this.users.findById(viewerId);
+      if (viewer) {
+        const vSeg = getHostelSegmentForUserHostel(viewer.hostelName);
+        const iSeg = getHostelSegmentForUserHostel(item.hostelName);
+        const isOwner = item.author.id === viewerId;
+        if (!isOwner && vSeg && iSeg && vSeg !== iSeg) {
+          throw AppError.notFound("Listing not found");
+        }
+      }
+    }
     return item;
   }
 
   async list(viewerId: string | null, q: ListItemsQuery): Promise<Paginated<Item>> {
-    // Resolve the anchor hostel for "nearest first":
-    //   1. Caller-supplied `nearHostel` always wins (deep link / override).
-    //   2. Else when `sortByHostel` is on and the viewer is authenticated,
-    //      fall back to their profile hostel.
     let nearHostel = q.nearHostel;
-    if (!nearHostel && q.sortByHostel && viewerId) {
+    let audienceHostelNames: string[] | undefined;
+
+    if (viewerId) {
       const viewer = await this.users.findById(viewerId);
-      nearHostel = viewer?.hostelName;
+      if (viewer) {
+        const seg = getHostelSegmentForUserHostel(viewer.hostelName);
+        if (seg) audienceHostelNames = [...hostelNamesInSegment(seg)];
+        if (!nearHostel && q.sortByHostel) nearHostel = viewer.hostelName;
+      }
     }
 
     return this.items.list({
@@ -76,6 +100,7 @@ export class ItemService {
       nearHostel,
       status: q.status,
       ownerId: q.mine && viewerId ? viewerId : undefined,
+      audienceHostelNames,
       page: q.page,
       pageSize: Math.min(q.pageSize, MARKETPLACE_LIMITS.PAGE_SIZE_MAX),
     });

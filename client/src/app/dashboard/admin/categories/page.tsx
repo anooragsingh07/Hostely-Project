@@ -12,10 +12,7 @@ import { Label } from "@/components/ui/label";
 import { AdminGuard } from "@/features/admin/components/admin-guard";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { categoriesApi } from "@/features/categories/services/categories.api";
-
-interface ApiError {
-  message?: string;
-}
+import { getApiErrorMessage } from "@/lib/error-message";
 
 /** Normalizes a free-form label into a URL-safe slug for the slug input auto-fill. */
 const slugify = (raw: string): string =>
@@ -43,7 +40,7 @@ export default function AdminCategoriesPage() {
       // Keep the global dropdown cache fresh for every other open form.
       setCategories(list.filter((c) => c.active));
     } catch (err) {
-      toast.error((err as ApiError).message ?? "Failed to load categories");
+      toast.error(getApiErrorMessage(err, "Failed to load categories"));
     } finally {
       setLoading(false);
     }
@@ -70,7 +67,7 @@ export default function AdminCategoriesPage() {
       setSlugEdited(false);
       await refresh();
     } catch (err) {
-      toast.error((err as ApiError).message ?? "Couldn't create category");
+      toast.error(getApiErrorMessage(err, "Couldn't create category"));
     }
   };
 
@@ -83,7 +80,7 @@ export default function AdminCategoriesPage() {
       toast.success(cat.seeded ? "Category retired" : "Category deleted");
       await refresh();
     } catch (err) {
-      toast.error((err as ApiError).message ?? "Couldn't remove category");
+      toast.error(getApiErrorMessage(err, "Couldn't remove category"));
     } finally {
       setMutating(null);
     }
@@ -96,7 +93,7 @@ export default function AdminCategoriesPage() {
       toast.success("Category restored");
       await refresh();
     } catch (err) {
-      toast.error((err as ApiError).message ?? "Couldn't restore category");
+      toast.error(getApiErrorMessage(err, "Couldn't restore category"));
     } finally {
       setMutating(null);
     }

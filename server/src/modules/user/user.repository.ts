@@ -1,3 +1,5 @@
+import type { Role } from "@hostely/shared";
+import { Types, type FilterQuery } from "mongoose";
 import { UserModel, type UserDoc } from "./user.model.js";
 import type { CreateUserInput, PublicUser } from "./user.types.js";
 
@@ -11,7 +13,20 @@ export interface IUserRepository {
   findByRollNoWithPassword(rollNo: string): Promise<(UserDoc & { passwordHash: string }) | null>;
   findById(id: string): Promise<PublicUser | null>;
   existsByEmailOrRollNo(email: string, rollNo: string): Promise<boolean>;
+  listPaginated(params: {
+    page: number;
+    pageSize: number;
+    q?: string;
+  }): Promise<{ users: PublicUser[]; total: number }>;
+  updateAdminFields(
+    id: string,
+    patch: { role?: Role; banned?: boolean },
+  ): Promise<PublicUser | null>;
+  setPasswordHash(id: string, passwordHash: string): Promise<boolean>;
+  countByRole(role: Role): Promise<number>;
 }
+
+const escapeRegex = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const toPublic = (doc: UserDoc): PublicUser => ({
   id: doc.id as string,
@@ -21,6 +36,7 @@ const toPublic = (doc: UserDoc): PublicUser => ({
   department: doc.department,
   hostelName: doc.hostelName,
   role: doc.role as PublicUser["role"],
+  banned: Boolean(doc.banned),
   avatarUrl: doc.avatarUrl ?? undefined,
   createdAt: doc.createdAt?.toISOString?.() ?? new Date().toISOString(),
   updatedAt: doc.updatedAt?.toISOString?.() ?? new Date().toISOString(),
@@ -54,6 +70,52 @@ export class UserRepository implements IUserRepository {
       $or: [{ email: email.toLowerCase() }, { rollNo: rollNo.toUpperCase() }],
     }).exec();
     return Boolean(hit);
+  }
+
+  async listPaginated(params: {
+    page: number;
+    pageSize: number;
+    q?: string;
+  }): Promise<{ users: PublicUser[]; total: number }> {
+    const filter: FilterQuery<UserDoc> = {};
+    const q = params.q?.trim();
+    if (q) {
+      const rx = new RegExp(escapeRegex(q), "i");
+      filter.$or = [{ name: rx }, { email: rx }, { rollNo: rx }];
+    }
+    const skip = (params.page - 1) * params.pageSize;
+    const [docs, total] = await Promise.all([
+      UserModel.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(params.pageSize)
+        .exec() as Promise<UserDoc[]>,
+      UserModel.countDocuments(filter).exec(),
+    ]);
+    return { users: docs.map(toPublic), total };
+  }
+
+  async updateAdminFields(
+    id: string,
+    patch: { role?: Role; banned?: boolean },
+  ): Promise<PublicUser | null> {
+    if (!Types.ObjectId.isValid(id)) return null;
+    const doc = (await UserModel.findByIdAndUpdate(
+      id,
+      { $set: patch },
+      { new: true, runValidators: true },
+    ).exec()) as unknown as UserDoc | null;
+    return doc ? toPublic(doc) : null;
+  }
+
+  async setPasswordHash(id: string, passwordHash: string): Promise<boolean> {
+    if (!Types.ObjectId.isValid(id)) return false;
+    const res = await UserModel.updateOne({ _id: id }, { $set: { passwordHash } }).exec();
+    return res.modifiedCount === 1;
+  }
+
+  async countByRole(role: Role): Promise<number> {
+    return UserModel.countDocuments({ role }).exec();
   }
 }
 

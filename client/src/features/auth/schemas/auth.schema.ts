@@ -11,10 +11,9 @@ const baseEmail = z.string().trim().toLowerCase().email("Enter a valid email");
  */
 const emailField =
   clientEnv.collegeEmailDomains.length > 0
-    ? baseEmail.refine(
-        (value) => isCollegeEmail(value, clientEnv.collegeEmailDomains),
-        { message: "Use your college email" },
-      )
+    ? baseEmail.refine((value) => isCollegeEmail(value, clientEnv.collegeEmailDomains), {
+        message: "Use your college email",
+      })
     : baseEmail;
 
 const rollNoField = z
@@ -46,6 +45,9 @@ export const signUpSchema = z.object({
     .min(VALIDATION.HOSTEL_MIN, "Enter your hostel")
     .max(VALIDATION.HOSTEL_MAX),
   password: passwordField,
+  acceptPolicies: z.boolean().refine((v) => v === true, {
+    message: "You must accept the Terms & Conditions and Privacy Policy",
+  }),
 });
 export type SignUpValues = z.infer<typeof signUpSchema>;
 

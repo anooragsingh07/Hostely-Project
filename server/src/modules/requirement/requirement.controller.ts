@@ -2,23 +2,19 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { created, ok } from "../../utils/apiResponse.js";
 import { AppError } from "../../utils/AppError.js";
+import { requireUserId } from "../../utils/requireUser.js";
 import { requirementService } from "./requirement.service.js";
 import type { CreateRequirementBody, ListRequirementsQuery } from "./requirement.validator.js";
 
-const requireUser = (req: Request): string => {
-  if (!req.user) throw AppError.unauthorized();
-  return req.user.sub;
-};
-
 export const requirementController = {
   create: asyncHandler(async (req: Request, res: Response) => {
-    const ownerId = requireUser(req);
+    const ownerId = requireUserId(req);
     const requirement = await requirementService.create(ownerId, req.body as CreateRequirementBody);
     return created(res, { requirement });
   }),
 
   remove: asyncHandler(async (req: Request, res: Response) => {
-    const ownerId = requireUser(req);
+    const ownerId = requireUserId(req);
     const id = req.params.id as string;
     await requirementService.delete(id, ownerId);
     res.status(204).end();
@@ -26,7 +22,8 @@ export const requirementController = {
 
   get: asyncHandler(async (req: Request, res: Response) => {
     const id = req.params.id as string;
-    const requirement = await requirementService.get(id);
+    if (!req.user) throw AppError.unauthorized();
+    const requirement = await requirementService.get(id, req.user.sub, req.user.role);
     return ok(res, { requirement });
   }),
 

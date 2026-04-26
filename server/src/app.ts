@@ -3,8 +3,8 @@ import cors from "cors";
 import express, { type Express } from "express";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
-import { applySecurityHeaders } from "./config/helmet.js";
 import { env } from "./config/env.js";
+import { applySecurityHeaders } from "./config/helmet.js";
 import { errorMiddleware, notFoundMiddleware } from "./middlewares/error.middleware.js";
 import {
   mongoInjectionSanitizer,

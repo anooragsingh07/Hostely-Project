@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  Pencil,
   RotateCcw,
   Search,
   ShieldOff,
@@ -16,14 +17,21 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { AdminGuard } from "@/features/admin/components/admin-guard";
 import { adminApi } from "@/features/admin/services/admin.api";
-
-interface ApiError {
-  message?: string;
-}
+import { getApiErrorMessage } from "@/lib/error-message";
 
 const PAGE_SIZE = 20;
 
@@ -48,6 +56,11 @@ export default function AdminModerationPage() {
   const [status, setStatus] = useState<ItemStatus | "">("");
   const [q, setQ] = useState("");
   const [qDraft, setQDraft] = useState("");
+  const [editItem, setEditItem] = useState<Item | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   const load = useCallback(async (): Promise<void> => {
     setLoading(true);
@@ -60,7 +73,7 @@ export default function AdminModerationPage() {
       });
       setData(res);
     } catch (err) {
-      toast.error((err as ApiError).message ?? "Failed to load listings");
+      toast.error(getApiErrorMessage(err, "Failed to load listings"));
     } finally {
       setLoading(false);
     }
@@ -78,9 +91,40 @@ export default function AdminModerationPage() {
       toast.success("Listing removed");
       await load();
     } catch (err) {
-      toast.error((err as ApiError).message ?? "Couldn't remove listing");
+      toast.error(getApiErrorMessage(err, "Couldn't remove listing"));
     } finally {
       setMutating(null);
+    }
+  };
+
+  const openEdit = (item: Item): void => {
+    setEditItem(item);
+    setEditTitle(item.title);
+    setEditDescription(item.description);
+    setEditPrice(String(item.price));
+  };
+
+  const saveEdit = async (): Promise<void> => {
+    if (!editItem) return;
+    const price = Number(editPrice);
+    if (!Number.isFinite(price) || price < 0) {
+      toast.error("Enter a valid price");
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      await adminApi.updateItem(editItem.id, {
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        price: Math.round(price),
+      });
+      toast.success("Listing updated");
+      setEditItem(null);
+      await load();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Couldn't update listing"));
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -91,7 +135,7 @@ export default function AdminModerationPage() {
       toast.success("Listing restored");
       await load();
     } catch (err) {
-      toast.error((err as ApiError).message ?? "Couldn't restore listing");
+      toast.error(getApiErrorMessage(err, "Couldn't restore listing"));
     } finally {
       setMutating(null);
     }
@@ -104,6 +148,52 @@ export default function AdminModerationPage() {
       title="Moderation"
       description="Review reported or suspicious listings. Removed items stay visible to their owner as tombstones."
     >
+      <Dialog open={editItem !== null} onOpenChange={(o) => !o && setEditItem(null)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit listing</DialogTitle>
+            <DialogDescription>Changes apply immediately for all viewers.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="adm-item-title">Title</Label>
+              <Input
+                id="adm-item-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="adm-item-desc">Description</Label>
+              <Textarea
+                id="adm-item-desc"
+                rows={5}
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="adm-item-price">Price (₹)</Label>
+              <Input
+                id="adm-item-price"
+                type="number"
+                min={0}
+                value={editPrice}
+                onChange={(e) => setEditPrice(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setEditItem(null)}>
+              Cancel
+            </Button>
+            <Button type="button" disabled={savingEdit} onClick={() => void saveEdit()}>
+              {savingEdit ? "Saving…" : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Card>
         <CardHeader className="gap-3">
           <div className="flex items-start justify-between gap-4">
@@ -193,6 +283,15 @@ export default function AdminModerationPage() {
                     </div>
 
                     <div className="flex shrink-0 items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={mutating === item.id}
+                        onClick={() => openEdit(item)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </Button>
                       <Button asChild size="sm" variant="ghost">
                         <Link href={`/dashboard/items/${item.id}`}>
                           <ExternalLink className="h-4 w-4" />

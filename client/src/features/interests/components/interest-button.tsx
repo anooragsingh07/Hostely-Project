@@ -4,16 +4,13 @@ import { Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { getApiErrorMessage } from "@/lib/error-message";
 import { interestsApi } from "../services/interests.api";
 
 interface InterestButtonProps {
   itemId: string;
   disabled?: boolean;
   onChange?: (marked: boolean) => void;
-}
-
-interface ApiError {
-  message?: string;
 }
 
 /**
@@ -58,7 +55,7 @@ export const InterestButton = ({ itemId, disabled, onChange }: InterestButtonPro
         toast.success("Interest sent to seller");
       }
     } catch (e) {
-      toast.error((e as ApiError).message ?? "Could not update interest");
+      toast.error(getApiErrorMessage(e, "Could not update interest"));
     } finally {
       setBusy(false);
     }

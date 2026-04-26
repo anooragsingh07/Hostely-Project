@@ -1,10 +1,6 @@
 import type { ChatMessage, Conversation, SendChatMessagePayload } from "@hostely/shared";
 import { apiClient } from "@/lib/api-client";
-
-interface ApiEnvelope<T> {
-  success: boolean;
-  data: T;
-}
+import type { ApiEnvelope } from "@/lib/api-types";
 
 interface ConversationsResponse {
   conversations: Conversation[];

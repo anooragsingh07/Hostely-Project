@@ -29,8 +29,8 @@ export default function DashboardLoading() {
           </div>
           <Skeleton className="h-9 w-24 rounded-md" />
         </header>
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto max-w-6xl space-y-6 px-6 py-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="container mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
             <Skeleton className="h-8 w-48" />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (

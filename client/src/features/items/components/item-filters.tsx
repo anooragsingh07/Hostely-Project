@@ -1,8 +1,9 @@
 "use client";
 
 import type { ItemCategory } from "@hostely/shared";
-import { HOSTELS } from "@hostely/shared";
+import { hostelsInViewerSegment } from "@hostely/shared";
 import { MapPin, Search, Sparkles, X } from "lucide-react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -21,20 +22,25 @@ interface ItemFiltersProps {
   value: ItemFilterValues;
   onChange: (next: ItemFilterValues) => void;
   onReset?: () => void;
+  /** When set, hostel filter options are limited to the same campus segment (boys / girls). */
+  viewerHostelName?: string;
 }
-
-const HOSTEL_OPTIONS = HOSTELS.map((h) => ({
-  value: h.name,
-  label: h.name,
-  group: `${h.zone[0]?.toUpperCase()}${h.zone.slice(1)} zone`,
-}));
 
 /**
  * Search bar + category chips + hostel dropdown + nearest-first toggle.
  * Controlled component — the parent owns state and debounces as needed.
  */
-export const ItemFilters = ({ value, onChange, onReset }: ItemFiltersProps) => {
+export const ItemFilters = ({ value, onChange, onReset, viewerHostelName }: ItemFiltersProps) => {
   const { categories } = useCategories();
+  const hostelOptions = useMemo(
+    () =>
+      hostelsInViewerSegment(viewerHostelName).map((h) => ({
+        value: h.name,
+        label: h.name,
+        group: h.segment === "boys" ? "Boys hostels" : "Girls hostels",
+      })),
+    [viewerHostelName],
+  );
   const dirty = Boolean(value.q || value.category || value.hostelName || value.sortByHostel);
 
   return (
@@ -59,7 +65,7 @@ export const ItemFilters = ({ value, onChange, onReset }: ItemFiltersProps) => {
             onChange={(e) => onChange({ ...value, hostelName: e.target.value })}
             placeholder="All hostels"
             aria-label="Filter by hostel"
-            options={HOSTEL_OPTIONS}
+            options={hostelOptions}
           />
         </div>
         <NearestToggle

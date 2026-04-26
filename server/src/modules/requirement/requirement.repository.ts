@@ -2,13 +2,18 @@ import type { Paginated, Requirement } from "@hostely/shared";
 import { Types, type FilterQuery } from "mongoose";
 import { UserModel } from "../user/user.model.js";
 import { RequirementModel, type RequirementDoc } from "./requirement.model.js";
-import type { CreateRequirementInput, ListRequirementsFilter } from "./requirement.types.js";
+import type {
+  CreateRequirementInput,
+  ListRequirementsFilter,
+  UpdateRequirementInput,
+} from "./requirement.types.js";
 
 export interface IRequirementRepository {
   create(input: CreateRequirementInput): Promise<Requirement>;
   delete(id: string, ownerId: string): Promise<boolean>;
   findById(id: string): Promise<Requirement | null>;
   list(filter: ListRequirementsFilter): Promise<Paginated<Requirement>>;
+  updateAsAdmin(id: string, patch: UpdateRequirementInput): Promise<Requirement | null>;
 }
 
 type PopulatedOwner = {
@@ -79,14 +84,26 @@ export class RequirementRepository implements IRequirementRepository {
     return toPublic(doc, owner);
   }
 
+  async updateAsAdmin(id: string, patch: UpdateRequirementInput): Promise<Requirement | null> {
+    if (!Types.ObjectId.isValid(id)) return null;
+    const doc = (await RequirementModel.findByIdAndUpdate(
+      id,
+      { $set: patch },
+      { new: true, runValidators: true },
+    ).exec()) as unknown as RequirementDoc | null;
+    if (!doc) return null;
+    const owner = await loadOwner(doc.owner);
+    return toPublic(doc, owner);
+  }
+
   async list(filter: ListRequirementsFilter): Promise<Paginated<Requirement>> {
     const query: FilterQuery<RequirementDoc> = {};
     if (filter.category) query.category = filter.category;
-    if (filter.hostelName) query.hostelName = filter.hostelName;
     if (filter.status) query.status = filter.status;
     else query.status = "open";
     if (filter.ownerId) query.owner = new Types.ObjectId(filter.ownerId);
     if (filter.q) query.$text = { $search: filter.q };
+    this.applyAudienceHostelFilter(query, filter);
 
     const skip = (filter.page - 1) * filter.pageSize;
     const [docs, total] = await Promise.all([
@@ -114,6 +131,28 @@ export class RequirementRepository implements IRequirementRepository {
       pageSize: filter.pageSize,
       total,
     };
+  }
+
+  private applyAudienceHostelFilter(
+    query: FilterQuery<RequirementDoc>,
+    filter: ListRequirementsFilter,
+  ): void {
+    if (filter.ownerId) {
+      if (filter.hostelName) query.hostelName = filter.hostelName;
+      return;
+    }
+
+    const audience = filter.audienceHostelNames;
+    if (audience?.length) {
+      if (filter.hostelName) {
+        query.hostelName = audience.includes(filter.hostelName) ? filter.hostelName : { $in: [] };
+      } else {
+        query.hostelName = { $in: [...audience] };
+      }
+      return;
+    }
+
+    if (filter.hostelName) query.hostelName = filter.hostelName;
   }
 }
 

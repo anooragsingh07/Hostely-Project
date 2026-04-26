@@ -1,4 +1,5 @@
-import axios, { AxiosError, type AxiosInstance } from "axios";
+import axios, { type AxiosInstance } from "axios";
+import type { AxiosError } from "axios";
 import { clientEnv } from "./env";
 
 /**

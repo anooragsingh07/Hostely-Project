@@ -14,10 +14,7 @@ import { ListingForm } from "@/features/items/components/listing-form";
 import { useItems } from "@/features/items/hooks/use-items";
 import { itemsApi } from "@/features/items/services/items.api";
 import { formatPrice, formatRelative } from "@/lib/format";
-
-interface ApiError {
-  message?: string;
-}
+import { getApiErrorMessage } from "@/lib/error-message";
 
 /**
  * Selling surface — post a new listing on the left, review your own on the right.
@@ -44,7 +41,7 @@ export default function SellPage() {
         toast.success("Listing removed");
         void refetch();
       } catch (e) {
-        toast.error((e as ApiError).message ?? "Could not delete listing");
+        toast.error(getApiErrorMessage(e, "Could not delete listing"));
       }
     },
     [refetch],

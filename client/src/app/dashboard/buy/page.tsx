@@ -56,6 +56,7 @@ export default function BuyPage() {
           value={filters}
           onChange={updateFilters}
           onReset={() => updateFilters(initialFilters)}
+          viewerHostelName={user?.hostelName}
         />
 
         <div className="flex items-center justify-between">

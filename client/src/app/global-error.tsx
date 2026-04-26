@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
 
 /**
  * Last-resort boundary when the root layout itself fails. Must define its
@@ -27,7 +20,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en">
       <body className="bg-background min-h-screen font-sans antialiased">
         <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
           <h1 className="text-lg font-semibold">Hostely couldn&apos;t start this view</h1>

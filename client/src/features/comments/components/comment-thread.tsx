@@ -9,16 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { formatRelative } from "@/lib/format";
+import { getApiErrorMessage } from "@/lib/error-message";
 import { commentsApi } from "../services/comments.api";
 
 interface CommentThreadProps {
   parentType: CommentParentType;
   parentId: string;
   currentUser: PublicUser | null;
-}
-
-interface ApiError {
-  message?: string;
 }
 
 /**
@@ -39,7 +36,7 @@ export const CommentThread = ({ parentType, parentId, currentUser }: CommentThre
       .then((items) => {
         if (!cancelled) setComments(items);
       })
-      .catch((e: ApiError) => toast.error(e.message ?? "Could not load comments"))
+      .catch((e: unknown) => toast.error(getApiErrorMessage(e, "Could not load comments")))
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
@@ -57,7 +54,7 @@ export const CommentThread = ({ parentType, parentId, currentUser }: CommentThre
       setComments((prev) => [...prev, created]);
       setBody("");
     } catch (e) {
-      toast.error((e as ApiError).message ?? "Could not post comment");
+      toast.error(getApiErrorMessage(e, "Could not post comment"));
     } finally {
       setSubmitting(false);
     }
@@ -69,7 +66,7 @@ export const CommentThread = ({ parentType, parentId, currentUser }: CommentThre
       await commentsApi.remove(id);
       setComments((prev) => prev.filter((c) => c.id !== id));
     } catch (e) {
-      toast.error((e as ApiError).message ?? "Could not delete comment");
+      toast.error(getApiErrorMessage(e, "Could not delete comment"));
     }
   }, []);
 

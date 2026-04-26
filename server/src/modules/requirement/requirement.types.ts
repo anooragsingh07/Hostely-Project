@@ -17,6 +17,16 @@ export interface ListRequirementsFilter {
   hostelName?: string;
   status?: RequirementStatus;
   ownerId?: string;
+  audienceHostelNames?: string[];
   page: number;
   pageSize: number;
+}
+
+export interface UpdateRequirementInput {
+  title?: string;
+  description?: string;
+  category?: ItemCategory;
+  budgetMax?: number;
+  hostelName?: string;
+  status?: RequirementStatus;
 }

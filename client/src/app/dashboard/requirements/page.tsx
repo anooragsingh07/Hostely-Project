@@ -13,10 +13,7 @@ import { RequirementForm } from "@/features/requirements/components/requirement-
 import { useRequirements } from "@/features/requirements/hooks/use-requirements";
 import { requirementsApi } from "@/features/requirements/services/requirements.api";
 import { useMe } from "@/features/auth/hooks/use-me";
-
-interface ApiError {
-  message?: string;
-}
+import { getApiErrorMessage } from "@/lib/error-message";
 
 /**
  * Requirements board — opposite side of the marketplace.
@@ -35,7 +32,7 @@ export default function RequirementsPage() {
         toast.success("Requirement removed");
         void refetch();
       } catch (e) {
-        toast.error((e as ApiError).message ?? "Could not delete requirement");
+        toast.error(getApiErrorMessage(e, "Could not delete requirement"));
       }
     },
     [refetch],

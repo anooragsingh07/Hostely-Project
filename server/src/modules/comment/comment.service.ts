@@ -1,5 +1,7 @@
-import type { Comment, CommentParentType } from "@hostely/shared";
+import type { Comment, CommentParentType, Item, Requirement } from "@hostely/shared";
+import { getHostelSegmentForUserHostel } from "@hostely/shared";
 import { AppError } from "../../utils/AppError.js";
+import { userRepository, type IUserRepository } from "../user/user.repository.js";
 import { itemRepository, type IItemRepository } from "../item/item.repository.js";
 import { notificationService } from "../notification/notification.service.js";
 import { commentRepository, type ICommentRepository } from "./comment.repository.js";
@@ -18,18 +20,24 @@ export class CommentService {
     private readonly comments: ICommentRepository,
     private readonly items: IItemRepository,
     private readonly requirements: IRequirementRepository,
+    private readonly users: IUserRepository,
   ) {}
+
+  private async assertSegmentAccess(viewerId: string, parent: Item | Requirement): Promise<void> {
+    const viewer = await this.users.findById(viewerId);
+    if (!viewer) return;
+    const vSeg = getHostelSegmentForUserHostel(viewer.hostelName);
+    const pSeg = getHostelSegmentForUserHostel(parent.hostelName);
+    const isOwner = parent.author.id === viewerId;
+    if (!isOwner && vSeg && pSeg && vSeg !== pSeg) {
+      throw AppError.notFound("Not found");
+    }
+  }
 
   private async loadParent(parentType: CommentParentType, parentId: string) {
     return parentType === "item"
       ? this.items.findById(parentId)
       : this.requirements.findById(parentId);
-  }
-
-  private async assertParentExists(parentType: CommentParentType, parentId: string): Promise<void> {
-    const exists = await this.loadParent(parentType, parentId);
-    if (!exists)
-      throw AppError.notFound(`${parentType === "item" ? "Listing" : "Requirement"} not found`);
   }
 
   async add(
@@ -41,6 +49,7 @@ export class CommentService {
     const parent = await this.loadParent(parentType, parentId);
     if (!parent)
       throw AppError.notFound(`${parentType === "item" ? "Listing" : "Requirement"} not found`);
+    await this.assertSegmentAccess(authorId, parent);
 
     const comment = await this.comments.create({ parentType, parentId, authorId, body });
 
@@ -61,8 +70,15 @@ export class CommentService {
     return comment;
   }
 
-  async list(parentType: CommentParentType, parentId: string): Promise<Comment[]> {
-    await this.assertParentExists(parentType, parentId);
+  async list(
+    parentType: CommentParentType,
+    parentId: string,
+    viewerId: string,
+  ): Promise<Comment[]> {
+    const parent = await this.loadParent(parentType, parentId);
+    if (!parent)
+      throw AppError.notFound(`${parentType === "item" ? "Listing" : "Requirement"} not found`);
+    await this.assertSegmentAccess(viewerId, parent);
     return this.comments.listForParent(parentType, parentId);
   }
 
@@ -78,4 +94,5 @@ export const commentService = new CommentService(
   commentRepository,
   itemRepository,
   requirementRepository,
+  userRepository,
 );

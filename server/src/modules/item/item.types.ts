@@ -34,6 +34,10 @@ export interface ListItemsFilter {
   nearHostel?: string;
   status?: ItemStatus;
   ownerId?: string;
+  /**
+   * Limits listings to these hostels (viewer campus segment). Omitted for admin-style listings.
+   */
+  audienceHostelNames?: string[];
   page: number;
   pageSize: number;
 }

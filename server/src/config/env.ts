@@ -5,6 +5,9 @@ import { z } from "zod";
 /**
  * Fail fast on boot if environment is misconfigured.
  * This is the ONLY place that reads process.env.
+ *
+ * Secrets (`JWT_SECRET`, DB URI, payment/provider keys) must live in `.env` locally (gitignored)
+ * or in deployment environment variables — never in the repository.
  */
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -18,7 +21,11 @@ const EnvSchema = z.object({
 
   BCRYPT_SALT_ROUNDS: z.coerce.number().int().min(10).max(15).default(12),
 
-  SESSION_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(60 * 60 * 24 * 7),
+  SESSION_MAX_AGE_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(60 * 60 * 24 * 7),
 
   COLLEGE_EMAIL_DOMAINS: z
     .string()
